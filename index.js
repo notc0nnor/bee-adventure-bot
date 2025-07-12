@@ -30,7 +30,7 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel],
 });
 
-const TOKEN = "PLACEHOLDER_TOKEN";
+const TOKEN = process.env.DISCORD_TOKEN;
 
 const adventureData = {};
 
