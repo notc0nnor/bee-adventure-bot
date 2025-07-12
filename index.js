@@ -219,55 +219,50 @@ client.on(Events.InteractionCreate, async (interaction) => {
     await interaction.message.edit({ components: [] });
   }
 
-  setTimeout(async () => {
-    const user = adventureData[userId];
-    if (!user) return;
+setTimeout(async () => {
+  const user = adventureData[userId];
+  if (!user) return;
 
-    const coinsEarned =
-      Math.floor(Math.random() * (user.maxCoins - user.minCoins + 1)) + user.minCoins;
+  const coinsEarned =
+    Math.floor(Math.random() * (user.maxCoins - user.minCoins + 1)) + user.minCoins;
 
-    let flowersFound = 0;
-    if (Math.random() < user.flowerChance) {
-      flowersFound = 1 + Math.floor(Math.random() * user.maxFlowers);
-    }
+  let flowersFound = 0;
+  if (Math.random() < user.flowerChance) {
+    flowersFound = 1 + Math.floor(Math.random() * user.maxFlowers);
+  }
 
-    user.inventory.coins += coinsEarned;
-    user.inventory.flowers += flowersFound;
-    user.endsAt = null;
-    saveAdventureData();
+  user.inventory.coins += coinsEarned;
+  user.inventory.flowers += flowersFound;
+  user.endsAt = null;
+  saveAdventureData();
 
-    const flavorMessages = [
-      "Your Bee helped a duck family cross the stream and got some honey from a bear!",
-      "Your Bee joined a squirrel in a leaf-gliding contest and found shiny mushrooms!",
-      "Your Bee helped ladybugs rebuild after a storm and found tiny treasures!",
-      "Your Bee learned wind-reading from an elderly moth in a quiet orchard!",
-      "Your Bee danced with fireflies in a hidden garden and traded pollen for gems!",
-      "Your Bee protected the Ant Queen from the rain and received surprise gifts!",
-    ];
-    const flavor = flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
+  const flavorMessages = [
+      "Your Bee returns home! They tell you about their great adventure... They met a mother duck who lost her ducklings to the quick stream! Your Bee helped them return safely...",
+      "Buzzing happily, your Bee returns from the meadows beyond the hills! They share tales of shimmering dragonflies, hidden mushroom villages...",
+      "Your Bee comes flying back, a little muddy but full of joy! They ventured through a rain-drenched forest where they helped a ladybug colony rebuild...",
+      "With wings a little tired but spirit soaring, your Bee lands beside you! They explored the quiet corners of an old orchard...",
+      "Back from the wildflower fields, your Bee hums a tune they learned from a singing snail. They visited a hidden garden where fireflies held a lantern dance...",
+      "After a long and daring flight, your Bee lands on your shoulder and tells you their story. They ventured into the Woods and helped an ant queen...",
+  ];
+  const flavor = flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
 
-    const claimButton = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId(`claim_${coinsEarned}`)
-        .setLabel("Claim Coins 🪙")
-        .setStyle(ButtonStyle.Success)
+  const rewardEmbed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setTitle("Welcome back, Bee!")
+    .setDescription(
+      `${flavor}\n\nThey brought back **${coinsEarned} coins** 🪙${
+        flowersFound > 0 ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸` : ""
+      }.\n\nThey’re now resting 🐝`
     );
 
-    const rewardEmbed = new EmbedBuilder()
-      .setColor("#ffe712")
-      .setTitle("Welcome back, Bee!")
-      .setDescription(
-        `${flavor}\n\nThey brought back **${coinsEarned} coins** 🪙${
-          flowersFound > 0 ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸` : ""
-        }.\n\nThey’re now resting 🐝`
-      );
-
-    await interaction.channel.send({
+  const channel = client.channels.cache.get(interaction.channel.id);
+  if (channel) {
+    channel.send({
       content: `<@${userId}>`,
       embeds: [rewardEmbed],
-      components: [claimButton],
     });
-  }, durationMs);
+  }
+}, durationMs);
 });
 
 client.login(TOKEN);
