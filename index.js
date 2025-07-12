@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// UptimeRobot ping handler
 app.get("/", (req, res) => {
   res.send("Bot is alive!");
 });
@@ -10,6 +9,21 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`🌐 Keep-alive server listening on port ${PORT}`);
 });
+
+const fs = require("fs");
+const path = "./adventureData.json";
+
+function loadAdventureData() {
+  if (fs.existsSync(path)) {
+    return JSON.parse(fs.readFileSync(path));
+  }
+  return {};
+}
+
+function saveAdventureData() {
+  fs.writeFileSync(path, JSON.stringify(adventureData, null, 2));
+}
+
 const {
   Client,
   GatewayIntentBits,
@@ -31,8 +45,7 @@ const client = new Client({
 });
 
 const TOKEN = process.env.DISCORD_TOKEN;
-
-const adventureData = {};
+let adventureData = loadAdventureData();
 
 function formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -56,16 +69,12 @@ client.on("messageCreate", async (message) => {
   const now = Date.now();
 
   if (message.content.toLowerCase() === "!adventure") {
-    // Restrict command to users with a specific role
     const allowedRoleId = "1389996455921586277";
     if (!message.member.roles.cache.has(allowedRoleId)) {
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle("No Bee Found!")
-        .setDescription(
-          "It seems like you don't have a Bee that can go on an adventure! 🐝",
-        );
-
+        .setDescription("It seems like you don't have a Bee that can go on an adventure! 🐝");
       return message.reply({ embeds: [embed] });
     }
 
@@ -76,10 +85,7 @@ client.on("messageCreate", async (message) => {
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle("Ongoing Adventure")
-        .setDescription(
-          `Your Bee is still on an adventure! They will return in **${timeLeft}** 🌷`,
-        );
-
+        .setDescription(`Your Bee is still on an adventure! They will return in **${timeLeft}** 🌷`);
       return message.reply({ embeds: [embed] });
     }
 
@@ -88,34 +94,20 @@ client.on("messageCreate", async (message) => {
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle("Resting Bee.🐝")
-        .setDescription(
-          `Your Bee is tired after their adventure, they need to rest now. 🌼 They will be ready again in **${cooldownLeft}**.`,
-        );
-
+        .setDescription(`Your Bee is tired and will be ready again in **${cooldownLeft}**.`);
       return message.reply({ embeds: [embed] });
     }
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId("adventure_1h")
-        .setLabel("1h")
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId("adventure_3h")
-        .setLabel("3h")
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId("adventure_8h")
-        .setLabel("8h")
-        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("adventure_1h").setLabel("1h").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("adventure_3h").setLabel("3h").setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId("adventure_8h").setLabel("8h").setStyle(ButtonStyle.Primary)
     );
 
     const embed = new EmbedBuilder()
       .setColor("#ffe712")
       .setTitle("Adventure Time!")
-      .setDescription(
-        "How long does your Bee want to go on an adventure for? 🌸",
-      );
+      .setDescription("How long does your Bee want to go on an adventure for? 🌸");
 
     return message.reply({ embeds: [embed], components: [row] });
   }
@@ -128,28 +120,40 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const now = Date.now();
   const user = adventureData[userId];
 
+  if (interaction.customId.startsWith("claim_")) {
+    const amount = parseInt(interaction.customId.split("_")[1]);
+    await interaction.reply({
+      content: `-give-money <@${userId}> ${amount}`,
+      ephemeral: false,
+    });
+    await interaction.message.edit({ components: [] });
+    return;
+  }
+
   if (user && user.endsAt && now < user.endsAt) {
     const timeLeft = formatTime(user.endsAt - now);
-    const embed = new EmbedBuilder()
-      .setColor("#ffe712")
-      .setTitle("Adventure in Progress")
-      .setDescription(
-        `Your Bee is already on an adventure! They will return in **${timeLeft}**🌷`,
-      );
-
-    return interaction.reply({ embeds: [embed], ephemeral: true });
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor("#ffe712")
+          .setTitle("Adventure in Progress")
+          .setDescription(`Your Bee will return in **${timeLeft}**🌷`),
+      ],
+      ephemeral: true,
+    });
   }
 
   if (user && user.cooldownUntil && now < user.cooldownUntil) {
     const cooldownLeft = formatTime(user.cooldownUntil - now);
-    const embed = new EmbedBuilder()
-      .setColor("#ffe712")
-      .setTitle("Recovery Time!")
-      .setDescription(
-        `Your Bee is still recovering and will be ready in **${cooldownLeft}**.`,
-      );
-
-    return interaction.reply({ embeds: [embed], ephemeral: true });
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor("#ffe712")
+          .setTitle("Resting Bee")
+          .setDescription(`They’ll be ready in **${cooldownLeft}**.`),
+      ],
+      ephemeral: true,
+    });
   }
 
   let durationMs, cooldownMs, minCoins, maxCoins, flowerChance, maxFlowers;
@@ -176,12 +180,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
     flowerChance = 0.1;
     maxFlowers = 3;
   } else {
-    const embed = new EmbedBuilder()
-      .setColor("#ffe712")
-      .setTitle("Oops!")
-      .setDescription("Something is wrong, please ping Grace.");
-
-    return interaction.reply({ embeds: [embed], ephemeral: true });
+    return interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setColor("#ffe712")
+          .setTitle("Oops!")
+          .setDescription("Something is wrong, please ping Grace."),
+      ],
+      ephemeral: true,
+    });
   }
 
   adventureData[userId] = {
@@ -195,28 +202,29 @@ client.on(Events.InteractionCreate, async (interaction) => {
     maxFlowers,
     inventory: user ? user.inventory : { coins: 0, flowers: 0 },
   };
+  saveAdventureData();
 
-  const embed = new EmbedBuilder()
-    .setColor("#ffe712")
-    .setTitle("Adventure!🌸")
-    .setDescription(
-      `Yay! Your Bee has started their adventure for **${interaction.customId.slice(10)}**! They will return then!🌷`,
-    );
-
-  await interaction.reply({ embeds: [embed] });
+  await interaction.reply({
+    embeds: [
+      new EmbedBuilder()
+        .setColor("#ffe712")
+        .setTitle("Adventure!🌸")
+        .setDescription(
+          `Yay! Your Bee started a **${interaction.customId.slice(10)}** adventure! 🌷`
+        ),
+    ],
+  });
 
   if (interaction.message.editable) {
     await interaction.message.edit({ components: [] });
   }
 
-  // 🐝 Automatically finish adventure after timeout
-  setTimeout(() => {
+  setTimeout(async () => {
     const user = adventureData[userId];
     if (!user) return;
 
     const coinsEarned =
-      Math.floor(Math.random() * (user.maxCoins - user.minCoins + 1)) +
-      user.minCoins;
+      Math.floor(Math.random() * (user.maxCoins - user.minCoins + 1)) + user.minCoins;
 
     let flowersFound = 0;
     if (Math.random() < user.flowerChance) {
@@ -226,32 +234,38 @@ client.on(Events.InteractionCreate, async (interaction) => {
     user.inventory.coins += coinsEarned;
     user.inventory.flowers += flowersFound;
     user.endsAt = null;
+    saveAdventureData();
 
     const flavorMessages = [
-      "Your Bee returns home! They tell you about their great adventure... They met a mother duck who lost her ducklings to the quick stream! Your Bee helped them return safely. On the way they encountered a bear as well, who shared some of its honey with your Bee. They loved the adventure and brought you home some trinkets they found:",
-      "Buzzing happily, your Bee returns from the meadows beyond the hills! They share tales of shimmering dragonflies, hidden mushroom villages, and a squirrel who challenged them to a leaf-gliding contest. They didn’t win, but they found something special for you along the way:",
-      "Your Bee comes flying back, a little muddy but full of joy! They ventured through a rain-drenched forest where they helped a ladybug colony rebuild their homes after a horrid storm. In gratitude, the ladybugs offered your Bee a treasure trove of curiosities filled with:",
-      "With wings a little tired but spirit soaring, your Bee lands beside you! They explored the quiet corners of an old orchard, where they met an elderly moth who taught them how to read wind patterns. Along the way, your Bee found some curious objects they knew you'd love:",
-      "Back from the wildflower fields, your Bee hums a tune they learned from a singing snail. They visited a hidden garden where fireflies held a lantern dance, and your Bee was invited as guest of honor! In return for a small pollen gift, they received some shiny tokens which they saved for you:",
-      "After a long and daring flight, your Bee lands on your shoulder and tells you their story. They ventured into the Woods, where they helped an ant queen find her way, and avoided a raincloud ambush by hiding underneath a big tree. Of course, they protected the queen from the wet. As thanks, the colony left behind a few surprises:",
+      "Your Bee helped a duck family cross the stream and got some honey from a bear!",
+      "Your Bee joined a squirrel in a leaf-gliding contest and found shiny mushrooms!",
+      "Your Bee helped ladybugs rebuild after a storm and found tiny treasures!",
+      "Your Bee learned wind-reading from an elderly moth in a quiet orchard!",
+      "Your Bee danced with fireflies in a hidden garden and traded pollen for gems!",
+      "Your Bee protected the Ant Queen from the rain and received surprise gifts!",
     ];
-    const flavor =
-      flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
+    const flavor = flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
+
+    const claimButton = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`claim_${coinsEarned}`)
+        .setLabel("Claim Coins 🪙")
+        .setStyle(ButtonStyle.Success)
+    );
 
     const rewardEmbed = new EmbedBuilder()
       .setColor("#ffe712")
-      .setTitle(`Welcome back, Bee!`)
+      .setTitle("Welcome back, Bee!")
       .setDescription(
-        `${flavor}\n\nThey brought back **${coinsEarned} coins** 🪙` +
-          (flowersFound > 0
-            ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸`
-            : "") +
-          `.\n\nThey’re now resting 🐝`,
+        `${flavor}\n\nThey brought back **${coinsEarned} coins** 🪙${
+          flowersFound > 0 ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸` : ""
+        }.\n\nThey’re now resting 🐝`
       );
 
-    interaction.channel.send({
+    await interaction.channel.send({
       content: `<@${userId}>`,
       embeds: [rewardEmbed],
+      components: [claimButton],
     });
   }, durationMs);
 });
