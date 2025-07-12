@@ -61,7 +61,6 @@ function formatTime(ms) {
 client.once("ready", () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
-
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
@@ -74,34 +73,52 @@ client.on("messageCreate", async (message) => {
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle("No Bee Found!")
-        .setDescription("It seems like you don't have a Bee that can go on an adventure! 🐝");
+        .setDescription(
+          "It seems like you don't have a Bee that can go on an adventure! 🐝"
+        );
       return message.reply({ embeds: [embed] });
     }
 
     const user = adventureData[userId];
 
+    // ⛔️ Already on adventure
     if (user && user.endsAt && now < user.endsAt) {
       const timeLeft = formatTime(user.endsAt - now);
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle("Ongoing Adventure")
-        .setDescription(`Your Bee is still on an adventure! They will return in **${timeLeft}** 🌷`);
+        .setDescription(
+          `Your Bee is still on an adventure! They will return in **${timeLeft}** 🌷`
+        );
       return message.reply({ embeds: [embed] });
     }
 
+    // ⛔️ On cooldown
     if (user && user.cooldownUntil && now < user.cooldownUntil) {
       const cooldownLeft = formatTime(user.cooldownUntil - now);
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle("Resting Bee.🐝")
-        .setDescription(`Your Bee is tired and will be ready again in **${cooldownLeft}**.`);
-      return message.reply({ embeds: [embed] });
+        .setDescription(
+          `Your Bee is tired after their adventure, they need to rest now. 🌼 They will be ready again in **${cooldownLeft}**.`
+        );
+      return message.reply({ embeds: [embed] }); // 💡 This prevents the bot from sending buttons
     }
 
+    // ✅ Ready for adventure — send buttons
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId("adventure_1h").setLabel("1h").setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId("adventure_3h").setLabel("3h").setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId("adventure_8h").setLabel("8h").setStyle(ButtonStyle.Primary)
+      new ButtonBuilder()
+        .setCustomId("adventure_1h")
+        .setLabel("1h")
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("adventure_3h")
+        .setLabel("3h")
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("adventure_8h")
+        .setLabel("8h")
+        .setStyle(ButtonStyle.Primary)
     );
 
     const embed = new EmbedBuilder()
@@ -120,40 +137,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const now = Date.now();
   const user = adventureData[userId];
 
-  if (interaction.customId.startsWith("claim_")) {
-    const amount = parseInt(interaction.customId.split("_")[1]);
-    await interaction.reply({
-      content: `-give-money <@${userId}> ${amount}`,
-      ephemeral: false,
-    });
-    await interaction.message.edit({ components: [] });
-    return;
-  }
-
   if (user && user.endsAt && now < user.endsAt) {
     const timeLeft = formatTime(user.endsAt - now);
-    return interaction.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setColor("#ffe712")
-          .setTitle("Adventure in Progress")
-          .setDescription(`Your Bee will return in **${timeLeft}**🌷`),
-      ],
-      ephemeral: true,
-    });
+    const embed = new EmbedBuilder()
+      .setColor("#ffe712")
+      .setTitle("Adventure in Progress")
+      .setDescription(`Your Bee is already on an adventure! They will return in **${timeLeft}**🌷`);
+    return interaction.reply({ embeds: [embed] });
   }
 
   if (user && user.cooldownUntil && now < user.cooldownUntil) {
     const cooldownLeft = formatTime(user.cooldownUntil - now);
-    return interaction.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setColor("#ffe712")
-          .setTitle("Resting Bee")
-          .setDescription(`They’ll be ready in **${cooldownLeft}**.`),
-      ],
-      ephemeral: true,
-    });
+    const embed = new EmbedBuilder()
+      .setColor("#ffe712")
+      .setTitle("Recovery Time!")
+      .setDescription(`Your Bee is still recovering and will be ready in **${cooldownLeft}**.`);
+    return interaction.reply({ embeds: [embed] });
   }
 
   let durationMs, cooldownMs, minCoins, maxCoins, flowerChance, maxFlowers;
@@ -180,15 +179,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
     flowerChance = 0.1;
     maxFlowers = 3;
   } else {
-    return interaction.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setColor("#ffe712")
-          .setTitle("Oops!")
-          .setDescription("Something is wrong, please ping Grace."),
-      ],
-      ephemeral: true,
-    });
+    const embed = new EmbedBuilder()
+      .setColor("#ffe712")
+      .setTitle("Oops!")
+      .setDescription("Something is wrong, please ping Grace.");
+    return interaction.reply({ embeds: [embed] });
   }
 
   adventureData[userId] = {
@@ -204,65 +199,55 @@ client.on(Events.InteractionCreate, async (interaction) => {
   };
   saveAdventureData();
 
-  await interaction.reply({
-    embeds: [
-      new EmbedBuilder()
-        .setColor("#ffe712")
-        .setTitle("Adventure!🌸")
-        .setDescription(
-          `Yay! Your Bee started a **${interaction.customId.slice(10)}** adventure! 🌷`
-        ),
-    ],
-  });
+  const embed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setTitle("Adventure!🌸")
+    .setDescription(`Yay! Your Bee has started their adventure for **${interaction.customId.slice(10)}**! They will return then!🌷`);
+
+  await interaction.reply({ embeds: [embed] });
 
   if (interaction.message.editable) {
     await interaction.message.edit({ components: [] });
   }
 
-setTimeout(async () => {
-  const user = adventureData[userId];
-  if (!user) return;
+  setTimeout(() => {
+    const user = adventureData[userId];
+    if (!user) return;
 
-  const coinsEarned =
-    Math.floor(Math.random() * (user.maxCoins - user.minCoins + 1)) + user.minCoins;
+    const coinsEarned = Math.floor(Math.random() * (user.maxCoins - user.minCoins + 1)) + user.minCoins;
 
-  let flowersFound = 0;
-  if (Math.random() < user.flowerChance) {
-    flowersFound = 1 + Math.floor(Math.random() * user.maxFlowers);
-  }
+    let flowersFound = 0;
+    if (Math.random() < user.flowerChance) {
+      flowersFound = 1 + Math.floor(Math.random() * user.maxFlowers);
+    }
 
-  user.inventory.coins += coinsEarned;
-  user.inventory.flowers += flowersFound;
-  user.endsAt = null;
-  saveAdventureData();
+    user.inventory.coins += coinsEarned;
+    user.inventory.flowers += flowersFound;
+    user.endsAt = null;
+    saveAdventureData();
 
-  const flavorMessages = [
+    const flavorMessages = [
       "Your Bee returns home! They tell you about their great adventure... They met a mother duck who lost her ducklings to the quick stream! Your Bee helped them return safely...",
       "Buzzing happily, your Bee returns from the meadows beyond the hills! They share tales of shimmering dragonflies, hidden mushroom villages...",
       "Your Bee comes flying back, a little muddy but full of joy! They ventured through a rain-drenched forest where they helped a ladybug colony rebuild...",
       "With wings a little tired but spirit soaring, your Bee lands beside you! They explored the quiet corners of an old orchard...",
       "Back from the wildflower fields, your Bee hums a tune they learned from a singing snail. They visited a hidden garden where fireflies held a lantern dance...",
-      "After a long and daring flight, your Bee lands on your shoulder and tells you their story. They ventured into the Woods and helped an ant queen...",
-  ];
-  const flavor = flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
+      "After a long and daring flight, your Bee lands on your shoulder and tells you their story. They ventured into the Woods and helped an ant queen..."
+    ];
+    const flavor = flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
 
-  const rewardEmbed = new EmbedBuilder()
-    .setColor("#ffe712")
-    .setTitle("Welcome back, Bee!")
-    .setDescription(
-      `${flavor}\n\nThey brought back **${coinsEarned} coins** 🪙${
-        flowersFound > 0 ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸` : ""
-      }.\n\nThey’re now resting 🐝`
-    );
+    const rewardEmbed = new EmbedBuilder()
+      .setColor("#ffe712")
+      .setTitle("Welcome back, Bee!")
+      .setDescription(`${flavor}\n\nThey brought back **${coinsEarned} coins** 🪙` +
+        (flowersFound > 0 ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸` : "") +
+        `.\n\nThey’re now resting 🐝`);
 
-  const channel = client.channels.cache.get(interaction.channel.id);
-  if (channel) {
-    channel.send({
+    interaction.channel.send({
       content: `<@${userId}>`,
       embeds: [rewardEmbed],
     });
-  }
-}, durationMs);
+  }, durationMs);
 });
 
 client.login(TOKEN);
