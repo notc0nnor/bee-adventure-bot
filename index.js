@@ -227,12 +227,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
     saveAdventureData();
 
     const flavorMessages = [
-      "Your Bee returns home! They tell you about their great adventure... They met a mother duck who lost her ducklings to the quick stream! Your Bee helped them return safely...",
-      "Buzzing happily, your Bee returns from the meadows beyond the hills! They share tales of shimmering dragonflies, hidden mushroom villages...",
-      "Your Bee comes flying back, a little muddy but full of joy! They ventured through a rain-drenched forest where they helped a ladybug colony rebuild...",
-      "With wings a little tired but spirit soaring, your Bee lands beside you! They explored the quiet corners of an old orchard...",
-      "Back from the wildflower fields, your Bee hums a tune they learned from a singing snail. They visited a hidden garden where fireflies held a lantern dance...",
-      "After a long and daring flight, your Bee lands on your shoulder and tells you their story. They ventured into the Woods and helped an ant queen..."
+          "Your Bee returns home! They tell you about their great adventure... They met a mother duck who lost her ducklings to the quick stream! Your Bee helped them return safely. On the way they encountered a bear as well, who shared some of its honey with your Bee. They loved the adventure and brought you home some trinkets they found:",
+      "Buzzing happily, your Bee returns from the meadows beyond the hills! They share tales of shimmering dragonflies, hidden mushroom villages, and a squirrel who challenged them to a leaf-gliding contest. They didn’t win, but they found something special for you along the way:",
+      "Your Bee comes flying back, a little muddy but full of joy! They ventured through a rain-drenched forest where they helped a ladybug colony rebuild their homes after a horrid storm. In gratitude, the ladybugs offered your Bee a treasure trove of curiosities filled with:",
+      "With wings a little tired but spirit soaring, your Bee lands beside you! They explored the quiet corners of an old orchard, where they met an elderly moth who taught them how to read wind patterns. Along the way, your Bee found some curious objects they knew you'd love:",
+      "Back from the wildflower fields, your Bee hums a tune they learned from a singing snail. They visited a hidden garden where fireflies held a lantern dance, and your Bee was invited as guest of honor! In return for a small pollen gift, they received some shiny tokens which they saved for you:",
+      "After a long and daring flight, your Bee lands on your shoulder and tells you their story. They ventured into the Woods, where they helped an ant queen find her way, and avoided a raincloud ambush by hiding underneath a big tree. Of course, they protected the queen from the wet. As thanks, the colony left behind a few surprises:",
     ];
     const flavor = flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
 
