@@ -198,7 +198,54 @@ client.on("messageCreate", async (message) => {
     logChannel.send({ embeds: [logEmbed] });
   }
 }
-  
+// 🟢 !add coins 10 @user OR !add flowers 3 @user
+if (command === "!add") {
+  if (args.length < 3 || !["coins", "flowers"].includes(args[1])) {
+    return message.reply("Usage: `!add coins|flowers amount @user`");
+  }
+
+  const type = args[1];
+  const amount = parseInt(args[2]);
+  const target = message.mentions.users.first() || message.author;
+
+  if (isNaN(amount) || amount <= 0) {
+    return message.reply("Please provide a valid positive number for the amount.");
+  }
+
+  // Initialize inventory if missing
+  if (!adventureData[target.id]) {
+    adventureData[target.id] = { inventory: { coins: 0, flowers: 0 } };
+  } else if (!adventureData[target.id].inventory) {
+    adventureData[target.id].inventory = { coins: 0, flowers: 0 };
+  }
+
+  const before = adventureData[target.id].inventory[type] || 0;
+
+  // Add amount
+  adventureData[target.id].inventory[type] = before + amount;
+
+  saveAdventureData();
+
+  await message.reply(`Added ${amount} ${type} to ${target.username}'s inventory.`);
+
+  // 🔔 Send log to the log channel
+  const logChannelId = "1394414785130532976";
+  const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
+  if (logChannel && logChannel.isTextBased()) {
+    const logEmbed = new EmbedBuilder()
+      .setColor("#32CD32") // Green for add
+      .setTitle("Inventory Change")
+      .setDescription(
+        `**Added:** ${amount} ${type}\n` +
+        `**To:** ${target.tag} (<@${target.id}>)\n` +
+        `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
+        `**Previous:** ${before} → **Now:** ${adventureData[target.id].inventory[type]}`
+      )
+      .setTimestamp();
+
+    logChannel.send({ embeds: [logEmbed] });
+  }
+}
 });
 
 
@@ -258,17 +305,17 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return interaction.reply({ embeds: [embed] });
   }
 
-  adventureData[userId] = {
-    endsAt: now + durationMs,
-    cooldownUntil: now + durationMs + cooldownMs,
-    durationMs,
-    cooldownMs,
-    minCoins,
-    maxCoins,
-    flowerChance,
-    maxFlowers,
-    inventory: user ? user.inventory : { coins: 0, flowers: 0 },
-  };
+ adventureData[userId] = {
+  endsAt: now + durationMs,
+  cooldownUntil: now + durationMs + cooldownMs,
+  durationMs,
+  cooldownMs,
+  minCoins,
+  maxCoins,
+  flowerChance,
+  maxFlowers,
+  inventory: user?.inventory ?? { coins: 0, flowers: 0 },
+};
   saveAdventureData();
 
   const embed = new EmbedBuilder()
@@ -284,6 +331,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   setTimeout(() => {
     const user = adventureData[userId];
+    if (!user.inventory) {
+  user.inventory = { coins: 0, flowers: 0 };
+}
     if (!user) return;
 
     const coinsEarned = Math.floor(Math.random() * (user.maxCoins - user.minCoins + 1)) + user.minCoins;
