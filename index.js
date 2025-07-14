@@ -64,10 +64,15 @@ client.once("ready", () => {
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
+  const content = message.content.toLowerCase();
+  const args = message.content.trim().split(/\s+/);
+  const command = args[0].toLowerCase();
   const userId = message.author.id;
   const now = Date.now();
 
-  if (message.content.toLowerCase() === "!adventure") {
+  // --- !adventure command ---
+  if (content === "!adventure") {
+    // Place your entire adventure command code here from your original first listener
     const allowedRoleId = "1389996455921586277";
     if (!message.member.roles.cache.has(allowedRoleId)) {
       const embed = new EmbedBuilder()
@@ -81,7 +86,7 @@ client.on("messageCreate", async (message) => {
 
     const user = adventureData[userId];
 
-    // ⛔️ Already on adventure
+    // Already on adventure
     if (user && user.endsAt && now < user.endsAt) {
       const timeLeft = formatTime(user.endsAt - now);
       const embed = new EmbedBuilder()
@@ -93,7 +98,7 @@ client.on("messageCreate", async (message) => {
       return message.reply({ embeds: [embed] });
     }
 
-    // ⛔️ On cooldown
+    // On cooldown
     if (user && user.cooldownUntil && now < user.cooldownUntil) {
       const cooldownLeft = formatTime(user.cooldownUntil - now);
       const embed = new EmbedBuilder()
@@ -102,10 +107,10 @@ client.on("messageCreate", async (message) => {
         .setDescription(
           `Your Bee is tired after their adventure, they need to rest now. 🌼 They will be ready again in **${cooldownLeft}**.`
         );
-      return message.reply({ embeds: [embed] }); // 💡 This prevents the bot from sending buttons
+      return message.reply({ embeds: [embed] });
     }
 
-    // ✅ Ready for adventure — send buttons
+    // Ready for adventure — send buttons
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("adventure_1h")
@@ -128,25 +133,18 @@ client.on("messageCreate", async (message) => {
 
     return message.reply({ embeds: [embed], components: [row] });
   }
-});
 
-client.on("messageCreate", async (message) => {
-  if (message.author.bot) return;
-
-  const args = message.content.trim().split(/\s+/);
-  const command = args[0].toLowerCase();
-
-  // 📦 !inventory or !inventory @user
+  // --- !inventory command ---
   if (command === "!inventory") {
     let user = message.mentions.users.first() || message.author;
     let data = adventureData[user.id];
 
-    if (!data) {
+    if (!data || !data.inventory) {
       return message.reply(`${user.username} doesn't have an inventory yet.`);
     }
 
-    const coins = data.inventory?.coins ?? 0;
-    const flowers = data.inventory?.flowers ?? 0;
+    const coins = data.inventory.coins ?? 0;
+    const flowers = data.inventory.flowers ?? 0;
 
     const embed = new EmbedBuilder()
       .setColor("#ffe712")
@@ -156,96 +154,97 @@ client.on("messageCreate", async (message) => {
     return message.reply({ embeds: [embed] });
   }
 
-  // 🧹 !remove coins 10 @user OR !remove flowers 3 @user
- if (command === "!remove") {
-  if (args.length < 3 || !["coins", "flowers"].includes(args[1])) {
-    return message.reply("Usage: `!remove coins|flowers amount @user`");
+  // --- !remove command ---
+  if (command === "!remove") {
+    if (args.length < 3 || !["coins", "flowers"].includes(args[1])) {
+      return message.reply("Usage: `!remove coins|flowers amount @user`");
+    }
+
+    const type = args[1];
+    const amount = parseInt(args[2]);
+    const target = message.mentions.users.first();
+
+    if (!target || isNaN(amount) || amount <= 0) {
+      return message.reply("Invalid usage or amount.");
+    }
+
+    const data = adventureData[target.id];
+    if (!data || !data.inventory) return message.reply(`${target.username} has no inventory.`);
+
+    const before = data.inventory[type] || 0;
+    const newAmount = Math.max(0, before - amount);
+    data.inventory[type] = newAmount;
+    saveAdventureData();
+
+    await message.reply(`Removed ${amount} ${type} from ${target.username}'s inventory.`);
+
+    // Log channel
+    const logChannelId = "1394414785130532976";
+    const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
+    if (logChannel && logChannel.isTextBased()) {
+      const logEmbed = new EmbedBuilder()
+        .setColor("#ff6347")
+        .setTitle("Inventory Change")
+        .setDescription(
+          `**Removed:** ${amount} ${type}\n` +
+          `**From:** ${target.tag} (<@${target.id}>)\n` +
+          `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
+          `**Previous:** ${before} → **Now:** ${newAmount}`
+        )
+        .setTimestamp();
+
+      logChannel.send({ embeds: [logEmbed] });
+    }
+    return;
   }
 
-  const type = args[1];
-  const amount = parseInt(args[2]);
-  const target = message.mentions.users.first();
+  // --- !add command ---
+  if (command === "!add") {
+    if (args.length < 3 || !["coins", "flowers"].includes(args[1])) {
+      return message.reply("Usage: `!add coins|flowers amount @user`");
+    }
 
-  if (!target || isNaN(amount) || amount <= 0) {
-    return message.reply("Invalid usage or amount.");
+    const type = args[1];
+    const amount = parseInt(args[2]);
+    const target = message.mentions.users.first() || message.author;
+
+    if (isNaN(amount) || amount <= 0) {
+      return message.reply("Please provide a valid positive number for the amount.");
+    }
+
+    // Initialize inventory if missing
+    if (!adventureData[target.id]) {
+      adventureData[target.id] = { inventory: { coins: 0, flowers: 0 } };
+    } else if (!adventureData[target.id].inventory) {
+      adventureData[target.id].inventory = { coins: 0, flowers: 0 };
+    }
+
+    const before = adventureData[target.id].inventory[type] || 0;
+
+    adventureData[target.id].inventory[type] = before + amount;
+    saveAdventureData();
+
+    await message.reply(`Added ${amount} ${type} to ${target.username}'s inventory.`);
+
+    // Log channel
+    const logChannelId = "1394414785130532976";
+    const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
+    if (logChannel && logChannel.isTextBased()) {
+      const logEmbed = new EmbedBuilder()
+        .setColor("#32CD32")
+        .setTitle("Inventory Change")
+        .setDescription(
+          `**Added:** ${amount} ${type}\n` +
+          `**To:** ${target.tag} (<@${target.id}>)\n` +
+          `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
+          `**Previous:** ${before} → **Now:** ${adventureData[target.id].inventory[type]}`
+        )
+        .setTimestamp();
+
+      logChannel.send({ embeds: [logEmbed] });
+    }
+    return;
   }
-
-  const data = adventureData[target.id];
-  if (!data) return message.reply(`${target.username} has no inventory.`);
-
-  const before = data.inventory[type] || 0;
-  const newAmount = Math.max(0, before - amount);
-  data.inventory[type] = newAmount;
-  saveAdventureData();
-
-  await message.reply(`Removed ${amount} ${type} from ${target.username}'s inventory.`);
-
-  // 🔔 Send log to the log channel
-  const logChannelId = "1394414785130532976";
-  const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
-  if (logChannel && logChannel.isTextBased()) {
-    const logEmbed = new EmbedBuilder()
-      .setColor("#ff6347")
-      .setTitle("Inventory Change")
-      .setDescription(
-        `**Removed:** ${amount} ${type}\n` +
-        `**From:** ${target.tag} (<@${target.id}>)\n` +
-        `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
-        `**Previous:** ${before} → **Now:** ${newAmount}`
-      )
-      .setTimestamp();
-
-    logChannel.send({ embeds: [logEmbed] });
-  }
-}
-// 🟢 !add coins 10 @user OR !add flowers 3 @user
-if (command === "!add") {
-  if (args.length < 3 || !["coins", "flowers"].includes(args[1])) {
-    return message.reply("Usage: `!add coins|flowers amount @user`");
-  }
-
-  const type = args[1];
-  const amount = parseInt(args[2]);
-  const target = message.mentions.users.first() || message.author;
-
-  if (isNaN(amount) || amount <= 0) {
-    return message.reply("Please provide a valid positive number for the amount.");
-  }
-
-  // Initialize inventory if missing
-  if (!adventureData[target.id]) {
-    adventureData[target.id] = { inventory: { coins: 0, flowers: 0 } };
-  } else if (!adventureData[target.id].inventory) {
-    adventureData[target.id].inventory = { coins: 0, flowers: 0 };
-  }
-
-  const before = adventureData[target.id].inventory[type] || 0;
-
-  // Add amount
-  adventureData[target.id].inventory[type] = before + amount;
-
-  saveAdventureData();
-
-  await message.reply(`Added ${amount} ${type} to ${target.username}'s inventory.`);
-
-  // 🔔 Send log to the log channel
-  const logChannelId = "1394414785130532976";
-  const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
-  if (logChannel && logChannel.isTextBased()) {
-    const logEmbed = new EmbedBuilder()
-      .setColor("#32CD32") // Green for add
-      .setTitle("Inventory Change")
-      .setDescription(
-        `**Added:** ${amount} ${type}\n` +
-        `**To:** ${target.tag} (<@${target.id}>)\n` +
-        `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
-        `**Previous:** ${before} → **Now:** ${adventureData[target.id].inventory[type]}`
-      )
-      .setTimestamp();
-
-    logChannel.send({ embeds: [logEmbed] });
-  }
-}
 });
 
 
