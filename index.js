@@ -44,6 +44,9 @@ const {
   Events,
   EmbedBuilder,
 } = require("discord.js");
+// Channel IDs
+const LOG_CHANNEL_ID = "1394414785130532976";       // Logging channel (for add/remove)
+const TRACKING_CHANNEL_ID = "1394792906849652977";  // Tracking channel (for level-up)
 
 const client = new Client({
   intents: [
@@ -273,8 +276,7 @@ if (command === "!add") {
     return message.reply("Please provide a valid positive number for the amount.");
   }
 
-  const logChannelId = "1394414785130532976";
-  const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
+ const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
 
   if (type === "xp" || type === "ep") {
     const beeId = args[3];
@@ -312,7 +314,7 @@ if (command === "!add") {
   } else {
     // coins or flowers
     const target = message.mentions.users.first() || message.author;
-    const adventureData = loadAdventureData();
+   adventureData = loadAdventureData();
 
     if (!adventureData[target.id]) {
       adventureData[target.id] = { inventory: { coins: 0, flowers: 0 } };
@@ -359,7 +361,7 @@ if (command === "!remove") {
     return message.reply("Please provide a valid positive number for the amount.");
   }
 
-  const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
+const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
 
   if (type === "xp" || type === "ep") {
     const beeId = args[3];
@@ -396,7 +398,7 @@ if (command === "!remove") {
 
   } else {
     const target = message.mentions.users.first() || message.author;
-    const adventureData = loadAdventureData();
+    adventureData = loadAdventureData();
 
     if (!adventureData[target.id] || !adventureData[target.id].inventory) {
       return message.reply(`${target.username} has no inventory.`);
@@ -423,41 +425,7 @@ if (command === "!remove") {
       logChannel.send({ embeds: [logEmbed] });
     }
   }
-
-
-
-    // Initialize inventory if missing
-    if (!adventureData[target.id]) {
-      adventureData[target.id] = { inventory: { coins: 0, flowers: 0 } };
-    } else if (!adventureData[target.id].inventory) {
-      adventureData[target.id].inventory = { coins: 0, flowers: 0 };
-    }
-
-    const before = adventureData[target.id].inventory[type] || 0;
-
-    adventureData[target.id].inventory[type] = before + amount;
-    saveAdventureData();
-
-    await message.reply(`Added ${amount} ${type} to ${target.username}'s inventory.`);
-
-    // Log channel
-    const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
-    if (logChannel && logChannel.isTextBased()) {
-      const logEmbed = new EmbedBuilder()
-        .setColor("#32CD32")
-        .setTitle("Inventory Change")
-        .setDescription(
-          `**Added:** ${amount} ${type}\n` +
-          `**To:** ${target.tag} (<@${target.id}>)\n` +
-          `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
-          `**Previous:** ${before} → **Now:** ${adventureData[target.id].inventory[type]}`
-        )
-        .setTimestamp();
-
-      logChannel.send({ embeds: [logEmbed] });
-    }
-    return;
-  }
+}
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -569,7 +537,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   // Load user inventory data (adventureData)
-  const adventureData = loadAdventureData();
+  adventureData = loadAdventureData();
   if (!adventureData[userId]) {
     adventureData[userId] = { inventory: { coins: 0, flowers: 0 } };
   } else if (!adventureData[userId].inventory) {
@@ -638,9 +606,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   // If bee leveled up in XP or EP, send level-up embed to log channel
   if (newXpLevel > oldXpLevel || newEpLevel > oldEpLevel) {
-    const tracklogChannelId = "1394792906849652977";
-    const tracklogChannel = client.channels.cache.get(tracklogChannelId);
-    if (tracklogChannel && tracklogChannel.isTextBased()) {
+   const logChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
+    if (logChannel && logChannel.isTextBased()) {
       const levelEmbed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle(`Bee ${beeId} has leveled up!`)
@@ -652,7 +619,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         )
         .setTimestamp();
 
-      tracklogChannel.send({ embeds: [levelEmbed] });
+      logChannel.send({ embeds: [levelEmbed] });
     }
   }
 
