@@ -425,7 +425,7 @@ if (command === "!remove") {
     }
   }
 }
-}
+
 
     // Initialize inventory if missing
     if (!adventureData[target.id]) {
