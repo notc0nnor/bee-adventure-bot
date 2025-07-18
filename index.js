@@ -442,7 +442,6 @@ if (command === "!remove") {
     await message.reply(`Added ${amount} ${type} to ${target.username}'s inventory.`);
 
     // Log channel
-    const logChannelId = "1394414785130532976";
     const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
     if (logChannel && logChannel.isTextBased()) {
       const logEmbed = new EmbedBuilder()
