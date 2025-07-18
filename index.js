@@ -359,7 +359,6 @@ if (command === "!remove") {
     return message.reply("Please provide a valid positive number for the amount.");
   }
 
-  const logChannelId = "1394414785130532976";
   const logChannel = await client.channels.fetch(logChannelId).catch(() => null);
 
   if (type === "xp" || type === "ep") {
@@ -639,9 +638,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   // If bee leveled up in XP or EP, send level-up embed to log channel
   if (newXpLevel > oldXpLevel || newEpLevel > oldEpLevel) {
-    const logChannelId = "1394792906849652977";
-    const logChannel = client.channels.cache.get(logChannelId);
-    if (logChannel && logChannel.isTextBased()) {
+    const tracklogChannelId = "1394792906849652977";
+    const tracklogChannel = client.channels.cache.get(tracklogChannelId);
+    if (tracklogChannel && tracklogChannel.isTextBased()) {
       const levelEmbed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle(`Bee ${beeId} has leveled up!`)
@@ -653,7 +652,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
         )
         .setTimestamp();
 
-      logChannel.send({ embeds: [levelEmbed] });
+      tracklogChannel.send({ embeds: [levelEmbed] });
     }
   }
 
