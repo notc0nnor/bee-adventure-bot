@@ -424,7 +424,7 @@ if (command === "!remove") {
       logChannel.send({ embeds: [logEmbed] });
     }
   }
-}
+
 
 
     // Initialize inventory if missing
