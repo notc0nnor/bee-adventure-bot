@@ -648,5 +648,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 }, durationMs);
 });
 
-
 client.login(TOKEN);
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Web server running on port ${PORT}`);
+});
+
