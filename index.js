@@ -221,15 +221,17 @@ if (command === "!bee") {
       const epLevel = getEpLevel(data.ep);
       const nextXp = xpLevels[xpLevel + 1] ?? "Max";
       const nextEp = epLevels[epLevel + 1] ?? "Max";
-      const level = Math.min(10, xpLevel);
+      const xpDisplayLevel = Math.min(10, xpLevel);
+      const epDisplayLevel = Math.min(10, epLevel);
+
 
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
         .setTitle(`ID: ${id}`)
        .setDescription(
-  `*Level ${level}*\n` +
+  `*Level ${xpDisplayLevel}*\n` +
   `${nextXp === "Max" ? "Maximum XP reached" : `XP: ${data.xp}/${nextXp} → ${nextXp - data.xp} to next level`}\n` +
-  `*Level ${level}*\n` +
+  `*Level ${epDisplayLevel}*\n` +
   `${nextEp === "Max" ? "Maximum EP reached" : `EP: ${data.ep}/${nextEp} → ${nextEp - data.ep} to next level`}`
 );
 
