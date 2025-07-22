@@ -224,11 +224,13 @@ if (command === "!bee") {
 
       const embed = new EmbedBuilder()
         .setColor("#ffe712")
-        .setTitle(`Bee ID: ${id}`)
+        .setTitle(`ID: ${id}`)
         .setDescription(
-          `XP: ${data.xp}/${nextXp} → ${nextXp === "Max" ? "Max" : nextXp - data.xp} to next level\n` +
-          `EP: ${data.ep}/${nextEp} → ${nextEp === "Max" ? "Max" : nextEp - data.ep} to next level`
-        );
+  `*Level ${data.level}*\n` +
+  `${nextXp === "Max" ? "Maximum XP reached" : `XP: ${data.xp}/${nextXp} → ${nextXp - data.xp} to next level`}\n` +
+  `*Level ${data.level}*\n` +
+  `${nextEp === "Max" ? "Maximum EP reached" : `EP: ${data.ep}/${nextEp} → ${nextEp - data.ep} to next level`}`
+);
 
       await message.channel.send({ embeds: [embed] });
     }
