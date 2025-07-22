@@ -620,13 +620,10 @@ if (newEpLevel > oldEpLevel) {
    if (levelUpMessages.length > 0) {
   const Discord = require("discord.js");
 
-  // Notify the bee owner in the current channel
-  message.channel.send(`<@${userId}>\n` + levelUpMessages.join("\n"));
-
-  // Also send it to the tracking channel
+  //send it to the tracking channel
   const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
   if (trackingChannel) {
-    trackingChannel.send(`📈 Bee **${beeId}** owned by <@${userId}> leveled up:\n` + levelUpMessages.join("\n"));
+    trackingChannel.send(`<@${userId}>:\n` + levelUpMessages.join("\n"));
   }
 }
 
