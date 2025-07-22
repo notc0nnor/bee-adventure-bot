@@ -604,54 +604,43 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const newXpLevel = getXpLevel(bee.xp);
   const newEpLevel = getEpLevel(bee.ep);
    
-   // Track level-up messages
+// Track level-up messages
 let levelUpMessages = [];
 
 // Check for XP level up
 if (newXpLevel > oldXpLevel) {
-  levelUpMessages.push(`🐝 Your bee **${beeId}** leveled up in XP! *Level ${oldXpLevel} → Level ${newXpLevel}* 🎉`);
+  levelUpMessages.push(`🐝 Your bee **${beeId}** leveled up in XP! *Level ${oldXpLevel} → Level ${newXpLevel}*`);
 }
 
 // Check for EP level up
 if (newEpLevel > oldEpLevel) {
-  levelUpMessages.push(`🌼 Your bee **${beeId}** leveled up in EP! *Level ${oldEpLevel} → Level ${newEpLevel}* 🎊`);
+  levelUpMessages.push(`🌼 Your bee **${beeId}** leveled up in EP! *Level ${oldEpLevel} → Level ${newEpLevel}*`);
 }
 
-   if (levelUpMessages.length > 0) {
-  const Discord = require("discord.js");
-
-  //send it to the tracking channel
+// Send embed if any level-up happened
+if (newXpLevel > oldXpLevel || newEpLevel > oldEpLevel) {
   const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
-  if (trackingChannel) {
-    trackingChannel.send(`<@${userId}>:\n` + levelUpMessages.join("\n"));
+  if (trackingChannel && trackingChannel.isTextBased()) {
+    const levelEmbed = new EmbedBuilder()
+      .setColor("#ffe712")
+      .setTitle(`🐝 Bee ${beeId} has leveled up!`)
+      .setDescription(levelUpMessages.join("\n"))
+      .setTimestamp();
+
+    trackingChannel.send({
+      content: `<@${userId}>`,
+      embeds: [levelEmbed]
+    });
   }
 }
 
-  // Clear adventure status so bee can go again
-  bee.endsAt = 0;
+// Clear adventure status so bee can go again
+bee.endsAt = 0;
 
-  // Save updated data
-  saveBeeData(beeData);
-  saveAdventureData(adventureData);
+// Save updated data
+saveBeeData(beeData);
+saveAdventureData(adventureData);
 
-  // If bee leveled up in XP or EP, send level-up embed to log channel
-  if (newXpLevel > oldXpLevel || newEpLevel > oldEpLevel) {
-   const logChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
-    if (logChannel && logChannel.isTextBased()) {
-      const levelEmbed = new EmbedBuilder()
-        .setColor("#ffe712")
-        .setTitle(`Bee ${beeId} has leveled up!`)
-        .setDescription(
-          `XP Level: ${oldXpLevel} → ${newXpLevel}\n` +
-          `EP Level: ${oldEpLevel} → ${newEpLevel}\n` +
-          `Current XP: ${bee.xp}\n` +
-          `Current EP: ${bee.ep}`
-        )
-        .setTimestamp();
-
-      logChannel.send({ embeds: [levelEmbed] });
-    }
-  }
 
   // Flavor messages for the adventure return
   const flavorMessages = [
