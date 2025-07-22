@@ -601,6 +601,32 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // Get new XP and EP levels after adding rewards
   const newXpLevel = getXpLevel(bee.xp);
   const newEpLevel = getEpLevel(bee.ep);
+   
+   // Track level-up messages
+let levelUpMessages = [];
+
+// Check for XP level up
+if (newXpLevel > oldXpLevel) {
+  levelUpMessages.push(`🐝 Your bee **${beeId}** leveled up in XP! *Level ${oldXpLevel} → Level ${newXpLevel}* 🎉`);
+}
+
+// Check for EP level up
+if (newEpLevel > oldEpLevel) {
+  levelUpMessages.push(`🌼 Your bee **${beeId}** leveled up in EP! *Level ${oldEpLevel} → Level ${newEpLevel}* 🎊`);
+}
+
+   if (levelUpMessages.length > 0) {
+  const Discord = require("discord.js");
+
+  // Notify the bee owner in the current channel
+  message.channel.send(`<@${userId}>\n` + levelUpMessages.join("\n"));
+
+  // Also send it to the tracking channel
+  const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
+  if (trackingChannel) {
+    trackingChannel.send(`📈 Bee **${beeId}** owned by <@${userId}> leveled up:\n` + levelUpMessages.join("\n"));
+  }
+}
 
   // Clear adventure status so bee can go again
   bee.endsAt = 0;
