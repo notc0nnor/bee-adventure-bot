@@ -560,16 +560,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
   let epReward = 0;
   if (bee.durationMs === 1 * 60 * 1000) {
     xpReward = 40;
-    epReward = 40;
+    epReward = 0;
   } else if (bee.durationMs === 3 * 60 * 60 * 1000) {
     xpReward = 12;
-    epReward = 4;
+    epReward = 0;
   } else if (bee.durationMs === 8 * 60 * 60 * 1000) {
     xpReward = 35;
-    epReward = 10;
+    epReward = 0;
   } else {
     xpReward = 5;
-    epReward = 1;
+    epReward = 0;
   }
 
   // Get current XP and EP levels before applying rewards (for bonus calculations)
@@ -579,13 +579,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // Apply XP level bonuses
   if (xpLevel >= 5) coinsEarned += 5;      // +5 coins at XP level 5
   if (xpLevel >= 9) bee.flowerChance += 0.03; // +3% flower chance at XP level 9
-
-  // Apply EP level bonuses
-  if (epLevel >= 1) coinsEarned += 5;
-  if (epLevel >= 2) { coinsEarned += 10; xpReward += 5; }
-  if (epLevel >= 3) { coinsEarned += 15; xpReward += 10; }
-  if (epLevel >= 4) { coinsEarned += 20; xpReward += 15; }
-  if (epLevel >= 5) { coinsEarned += 30; xpReward += 25; flowersFound += 1; }
 
   // Add the XP and EP rewards to the bee
   bee.xp += xpReward;
@@ -599,6 +592,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
   if (xpLevel >= 10) {
     adventureData[userId].inventory.flowers += 1;
   }
+const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
+if (logChannel && logChannel.isTextBased()) {
+  const rewardEmbed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setTitle(`Adventure Completed: Bee ${beeId}`)
+    .setDescription(
+      `**Owner:** <@${userId}>\n` +
+      `**Coins Earned:** ${coinsEarned} 🪙\n` +
+      `**Flowers Found:** ${flowersFound} 🌸\n` +
+      `**XP Gained:** ${xpReward} ✨\n` +
+      `**EP Gained:** ${epReward} 🧠`
+    )
+    .setTimestamp();
+
+  logChannel.send({ embeds: [rewardEmbed] });
+}
 
   // Get new XP and EP levels after adding rewards
   const newXpLevel = getXpLevel(bee.xp);
@@ -653,12 +662,19 @@ saveAdventureData(adventureData);
   ];
   const flavor = flavorMessages[Math.floor(Math.random() * flavorMessages.length)];
 
-  const rewardEmbed = new EmbedBuilder()
-    .setColor("#ffe712")
-    .setTitle("Welcome back, Bee!")
-    .setDescription(`${flavor}\n\nThey brought back **${coinsEarned} coins** 🪙` +
-      (flowersFound > 0 ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸` : "") +
-      `.\n\nThey’re now resting 🐝`);
+const rewardEmbed = new EmbedBuilder()
+  .setColor("#ffe712")
+  .setTitle("Welcome back, Bee!")
+  .setDescription(
+    `${flavor}\n\n` +
+    `They brought back **${coinsEarned} coins** 🪙` +
+    (flowersFound > 0
+      ? ` and **${flowersFound} flower${flowersFound > 1 ? "s" : ""}** 🌸`
+      : "") +
+    ` and earned **${xpReward} XP**.` +
+    `\n\nThey’re now resting 🐝`
+  )
+
 
   interaction.channel.send({
     content: `<@${userId}>`,
