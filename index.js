@@ -722,7 +722,7 @@ if (trackingChannel && trackingChannel.isTextBased()) {
     .setTitle("Bee Stat Change")
     .setDescription(
       `**ID:** ${beeId}\n` +
-      `**Owner:** <@${ownerId}>\n` +
+      `**Owner:** <@${userId}>\n` +
       `**XP:** +${xpReward}\n` +
       `**EP:** +${epReward}`
     )
