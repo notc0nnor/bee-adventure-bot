@@ -155,64 +155,7 @@ if (command === "!adventure") {
 
   return message.reply({ embeds: [embed], components: [row] });
 }
-// --- !work command ---
 
-  const workMessages = [
-if (command === "!work") {
-  const userId = message.author.id;
-  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
-  const adventureData = loadAdventureData();
-
-  if (!adventureData[userId]) {
-    adventureData[userId] = { inventory: { coins: 0, flowers: 0 } };
-  } else if (!adventureData[userId].inventory) {
-    adventureData[userId].inventory = { coins: 0, flowers: 0 };
-  }
-
-  const before = adventureData[userId].inventory.coins;
-  const coinsEarned = Math.floor(Math.random() * 21) + 12; // 12–32
-
-  adventureData[userId].inventory.coins += coinsEarned;
-  saveAdventureData(adventureData);
-
-  // Response to user
-  const responses = [
-   "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
-  "A mother duck comes up to you and drops some coins in your hands. You don't ask where she got it.",
-  "You do some gardening and earn some coins from a grateful swarm of bees.",
-  "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
-  "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
-  "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
-  "Some coins are left to you by a farmer after helping them on the field.",
-  "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
-  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
-  ];
-  const response = responses[Math.floor(Math.random() * responses.length)];
-
-  const embed = new EmbedBuilder()
-    .setColor("#ffe712")
-    .setTitle("Work Complete 🛠️")
-    .setDescription(`${response}\n\nYou earned **${coinsEarned}** 🪙`)
-    .setTimestamp();
-
-  await message.reply({ embeds: [embed] });
-
-  // Logging
-  if (logChannel && logChannel.isTextBased()) {
-    const logEmbed = new EmbedBuilder()
-      .setColor("#2ba3ff")
-      .setTitle("Inventory Change")
-      .setDescription(
-        `**Added:**\nCoins: ${coinsEarned} 🪙\n\n` +
-        `**Previous:**\nCoins: ${before} → ${adventureData[userId].inventory.coins}\n\n` +
-        `**To:** <@${userId}>\n` +
-        `**By:** Work`
-      )
-      .setTimestamp();
-
-    logChannel.send({ embeds: [logEmbed] });
-  }
-}
 
   // --- !inventory command ---
   if (command === "!inventory") {
@@ -530,6 +473,64 @@ const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null)
 
       logChannel.send({ embeds: [logEmbed] });
     }
+  }
+}
+  // --- !work command ---
+
+  const workMessages = [
+if (command === "!work") {
+  const userId = message.author.id;
+  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+  const adventureData = loadAdventureData();
+
+  if (!adventureData[userId]) {
+    adventureData[userId] = { inventory: { coins: 0, flowers: 0 } };
+  } else if (!adventureData[userId].inventory) {
+    adventureData[userId].inventory = { coins: 0, flowers: 0 };
+  }
+
+  const before = adventureData[userId].inventory.coins;
+  const coinsEarned = Math.floor(Math.random() * 21) + 12; // 12–32
+
+  adventureData[userId].inventory.coins += coinsEarned;
+  saveAdventureData(adventureData);
+
+  // Response to user
+  const responses = [
+   "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
+  "A mother duck comes up to you and drops some coins in your hands. You don't ask where she got it.",
+  "You do some gardening and earn some coins from a grateful swarm of bees.",
+  "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
+  "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
+  "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
+  "Some coins are left to you by a farmer after helping them on the field.",
+  "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
+  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
+  ];
+  const response = responses[Math.floor(Math.random() * responses.length)];
+
+  const embed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setTitle("Work Complete 🛠️")
+    .setDescription(`${response}\n\nYou earned **${coinsEarned}** 🪙`)
+    .setTimestamp();
+
+  await message.reply({ embeds: [embed] });
+
+  // Logging
+  if (logChannel && logChannel.isTextBased()) {
+    const logEmbed = new EmbedBuilder()
+      .setColor("#2ba3ff")
+      .setTitle("Inventory Change")
+      .setDescription(
+        `**Added:**\nCoins: ${coinsEarned} 🪙\n\n` +
+        `**Previous:**\nCoins: ${before} → ${adventureData[userId].inventory.coins}\n\n` +
+        `**To:** <@${userId}>\n` +
+        `**By:** Work`
+      )
+      .setTimestamp();
+
+    logChannel.send({ embeds: [logEmbed] });
   }
 }
 
