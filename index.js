@@ -342,6 +342,7 @@ if (type === "ep" && newEpLevel > oldEpLevel) {
 }
 
     await message.reply(`Added ${amount} ${type.toUpperCase()} to Bee ${beeId}.`);
+    const before = bee[type] || 0;
 
     if (logChannel && logChannel.isTextBased()) {
       const logEmbed = new EmbedBuilder()
