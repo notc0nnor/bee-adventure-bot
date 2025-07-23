@@ -115,6 +115,13 @@ client.on("messageCreate", async (message) => {
 
   // --- !adventure command ---
 if (command === "!adventure") {
+  const ADVENTURE_CHANNEL_ID = "1393923129008586753";
+if (message.channel.id !== ADVENTURE_CHANNEL_ID) {
+  return message.reply({
+    content: `Please visit <#${ADVENTURE_CHANNEL_ID}> to go on an adventure.`,
+    allowedMentions: { repliedUser: false }
+  });
+}
   const beeId = args[1];
   if (!beeId) return message.reply("Please specify your Bee ID. Usage: `!adventure [BeeID]`");
 
@@ -592,12 +599,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
     return interaction.reply({ embeds: [embed], ephemeral: true });
   }
 
-  // Change back time
   // Define rewards based on duration
   let durationMs, cooldownMs, minCoins, maxCoins, flowerChance, maxFlowers;
   if (durationStr === "1h") {
-    durationMs = 1 * 60 * 1000;
-    cooldownMs = 1 * 60 * 1000;
+    durationMs = 1 * 60 * 60 * 1000;
+    cooldownMs = 12 * 60 * 60 * 1000;
     minCoins = 7;
     maxCoins = 15;
     flowerChance = 0.02;
@@ -669,12 +675,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const oldXpLevel = getXpLevel(bee.xp);
   const oldEpLevel = getEpLevel(bee.ep);
 
-   // Change back time
+
   // XP and EP rewards based on adventure duration
   let xpReward = 0;
   let epReward = 0;
-  if (bee.durationMs === 1 * 60 * 1000) {
-    xpReward = 40;
+  if (bee.durationMs === 1 * 60 * 60 * 1000) {
+    xpReward = 5;
     epReward = 0;
   } else if (bee.durationMs === 3 * 60 * 60 * 1000) {
     xpReward = 12;
@@ -705,11 +711,6 @@ const prevFlowers = adventureData[userId].inventory.flowers;
   // Add coins and flowers found to the user’s inventory
   adventureData[userId].inventory.coins += coinsEarned;
   adventureData[userId].inventory.flowers += flowersFound;
-
-  // XP level 10 bonus: +1 flower added directly to user inventory
-  if (xpLevel >= 10) {
-    adventureData[userId].inventory.flowers += 1;
-  }
 
   // Get new XP and EP levels after adding rewards
   const newXpLevel = getXpLevel(bee.xp);
