@@ -715,22 +715,26 @@ const prevFlowers = adventureData[userId].inventory.flowers;
   const newXpLevel = getXpLevel(bee.xp);
   const newEpLevel = getEpLevel(bee.ep);
 
-   // help!
-const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
+   //help
+  const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
 if (trackingChannel && trackingChannel.isTextBased()) {
+  const before = bee.xp || 0; // prior XP value
+  const after = before + xpReward;
+
   const statEmbed = new EmbedBuilder()
-      .setColor("#8032cd")
-        .setTitle("Bee Stat Change")
-        .setDescription(
-        `**Added:** ${amount} ${type.toUpperCase()}\n` +
-        `**To:** ${beeId}\n` +
-        `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
-        `**Previous:** ${before} → **Now:** ${bee[type]}`
+    .setColor("#2ff535")
+    .setTitle("Bee Stat Change")
+    .setDescription(
+      `**Added:** ${xpReward} XP\n` +
+      `**To Bee:** ${beeId}\n` +
+      `**By:** Adventure\n` +
+      `**Previous:** ${before} → **Now:** ${after}`
     )
     .setTimestamp();
 
   trackingChannel.send({ embeds: [statEmbed] });
 }
+
 
   const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
   const inventoryEmbed = new EmbedBuilder()
