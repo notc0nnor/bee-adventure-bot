@@ -350,7 +350,7 @@ if (type === "ep" && newEpLevel > oldEpLevel) {
         .setTitle("Bee Stat Change")
         .setDescription(
           `**Added:** ${amount} ${type.toUpperCase()}\n` +
-          `**To Bee:** ${beeId}\n` +
+          `**To:** ${beeId}\n` +
           `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
           `**Previous:** ${before} → **Now:** ${bee[type]}`
         )
@@ -438,7 +438,7 @@ const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null)
         .setTitle("Bee Stat Change")
         .setDescription(
           `**Removed:** ${amount} ${type.toUpperCase()}\n` +
-          `**From Bee:** ${beeId}\n` +
+          `**From:** ${beeId}\n` +
           `**By:** ${message.author.tag} (<@${message.author.id}>)\n` +
           `**Previous:** ${before} → **Now:** ${bee[type]}`
         )
@@ -511,15 +511,13 @@ if (command === "!work") {
   saveAdventureData(adventureData);
 
   const workMessages = [
-    "You worked hard in the sunflower fields!",
-    "You gathered pollen with efficiency!",
-    "You buzzed around and made some deliveries!",
-    "You helped a caterpillar cross the leaf highway!",
-    "You traded nectar at the honey bazaar!",
-    "You cleaned up the hive and found a bonus!",
-    "You helped the queen sort her jelly jars!",
-    "You flew tourists through the flower trails!",
-    "You fixed a broken wing for a bee friend!"
+    "You do some gardening and earn some coins from a grateful swarm of bees.",
+  "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
+  "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
+  "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
+  "Some coins are left to you by a farmer after helping them on the field.",
+  "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
+  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
   ];
   const flavor = workMessages[Math.floor(Math.random() * workMessages.length)];
 
@@ -717,20 +715,23 @@ const prevFlowers = adventureData[userId].inventory.flowers;
   const newXpLevel = getXpLevel(bee.xp);
   const newEpLevel = getEpLevel(bee.ep);
 
-const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
-if (logChannel && logChannel.isTextBased()) {
-  const adventureLogEmbed = new EmbedBuilder()
+const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
+if (trackingChannel && trackingChannel.isTextBased()) {
+  const statEmbed = new EmbedBuilder()
     .setColor("#2ff535")
-    .setTitle("Adventure Completed")
+    .setTitle("Bee Stat Change")
     .setDescription(
       `**ID:** ${beeId}\n` +
-      `**Owner:** <@${userId}>\n\n` +
-      `**Coins:** ${coinsEarned} 🪙\n` +
-      (flowersFound > 0 ? `**Flowers:** ${flowersFound} 🌸\n` : "") +
-      `**XP:** ${xpReward} ✨`
+      `**Owner:** <@${ownerId}>\n` +
+      `**XP:** +${xpReward}\n` +
+      `**EP:** +${epReward}`
     )
     .setTimestamp();
 
+  trackingChannel.send({ embeds: [statEmbed] });
+}
+
+  const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
   const inventoryEmbed = new EmbedBuilder()
     .setColor("#2bff2b")
     .setTitle("Inventory Change")
@@ -746,7 +747,7 @@ if (logChannel && logChannel.isTextBased()) {
     )
     .setTimestamp();
 
-  logChannel.send({ embeds: [adventureLogEmbed, inventoryEmbed] });
+  logChannel.send({ embeds: [inventoryEmbed] });
 }
 
    
