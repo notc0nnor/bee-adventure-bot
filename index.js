@@ -155,6 +155,77 @@ if (command === "!adventure") {
 
   return message.reply({ embeds: [embed], components: [row] });
 }
+// --- !work command ---
+
+  const workMessages = [
+  "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
+  "A mother duck comes up to you and drops some coins in your hands. You don't ask where she got it.",
+  "You do some gardening and earn some coins from a grateful swarm of bees.",
+  "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
+  "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
+  "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
+  "Some coins are left to you by a farmer after helping them on the field.",
+  "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
+  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
+];
+
+if (command === "!work") {
+  adventureData = loadAdventureData(); // Load existing data
+  const userId = message.author.id;
+  const now = Date.now();
+
+  // Create user inventory if not exists
+  if (!adventureData[userId]) {
+    adventureData[userId] = { inventory: { coins: 0, flowers: 0 }, workCooldown: 0 };
+  }
+
+  if (!adventureData[userId].inventory) {
+    adventureData[userId].inventory = { coins: 0, flowers: 0 };
+  }
+
+  const cooldown = adventureData[userId].workCooldown || 0;
+  const threeHours = 3 * 60 * 60 * 1000;
+
+  // Check cooldown
+  if (now < cooldown) {
+    const timeLeft = formatTime(cooldown - now);
+    return message.reply(`You can work again in **${timeLeft}**.`);
+  }
+
+  // Give coins
+  const coinsEarned = Math.floor(Math.random() * 21) + 12; // 12–32
+  adventureData[userId].inventory.coins += coinsEarned;
+  adventureData[userId].workCooldown = now + threeHours;
+  saveAdventureData(adventureData);
+
+  // Tell user
+ const workFlavor = workMessages[Math.floor(Math.random() * workMessages.length)];
+const rewardEmbed = new EmbedBuilder()
+  .setColor("#ffe712")
+  .setTitle("You went to work!")
+  .setDescription(`${workFlavor}\n\nYou earned **${coinsEarned} coins**!`)
+  .setTimestamp();
+
+await message.reply({ embeds: [rewardEmbed] });
+
+
+  // Log it
+  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+  if (logChannel && logChannel.isTextBased()) {
+    const logEmbed = new EmbedBuilder()
+       .setColor("#2bffff")
+    .setTitle("Inventory Change")
+    .setDescription(
+      `**Added:**\nCoins: ${coinsEarned} 🪙\n\n` +
+      `**Previous:**\nCoins: ${before} → ${adventureData[userId].inventory.coins}\n\n` +
+      `**To:** <@${userId}>\n` +
+      `**By:** Work`
+    )
+    .setTimestamp();
+
+    logChannel.send({ embeds: [logEmbed] });
+  }
+}
 
   // --- !inventory command ---
   if (command === "!inventory") {
@@ -378,7 +449,7 @@ if (type === "ep" && newEpLevel > oldEpLevel) {
 
     if (logChannel && logChannel.isTextBased()) {
       const logEmbed = new EmbedBuilder()
-        .setColor("#2ba3ff")
+        .setColor("#2b67ff")
         .setTitle("Inventory Change")
         .setDescription(
           `**Added:** ${amount} ${type}\n` +
@@ -659,7 +730,7 @@ if (logChannel && logChannel.isTextBased()) {
     .setTimestamp();
 
   const inventoryEmbed = new EmbedBuilder()
-    .setColor("#ffb914")
+    .setColor("#2bff2b")
     .setTitle("Inventory Change")
     .setDescription(
       `**Added:**\n` +
