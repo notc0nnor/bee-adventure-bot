@@ -59,6 +59,9 @@ const client = new Client({
 
 const TOKEN = process.env.DISCORD_TOKEN;
 let adventureData = loadAdventureData();
+// work
+const workCooldowns = new Map();
+
 
 function formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -112,7 +115,51 @@ client.on("messageCreate", async (message) => {
   const command = args[0].toLowerCase();
   const userId = message.author.id;
   const now = Date.now();
+  // --- !work command ---
+if (message.content === "!work") {
+  const userId = message.author.id;
+  const now = Date.now();
 
+  if (!adventureData[userId]) {
+    adventureData[userId] = { coins: 0 };
+  }
+
+  const lastWorked = workCooldowns.get(userId);
+  const cooldown = 3 * 60 * 60 * 1000; // 3 hours in ms
+
+  if (lastWorked && now - lastWorked < cooldown) {
+    const remaining = formatTime(cooldown - (now - lastWorked));
+    return message.reply(`You can work again in ${remaining}.`);
+  }
+
+  // Generate random amount of coins
+  const earned = Math.floor(Math.random() * (32 - 12 + 1)) + 12;
+  const oldCoins = adventureData[userId].coins;
+  const newCoins = oldCoins + earned;
+  adventureData[userId].coins = newCoins;
+  workCooldowns.set(userId, now);
+  saveAdventureData();
+  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
+
+  const logEmbed = new EmbedBuilder()
+    .setColor("#2bff2b")
+    .setTitle("Inventory Change")
+    .setDescription(
+      `**Added:**\n` +
+      `Coins: ${coinsEarned} 🪙\n` +
+      `\n**Previous:**\n` +
+      `Coins: ${prevCoins} → ${adventureData[userId].inventory.coins}\n` +
+      `**To:** <@${userId}>\n` +
+      `**By:** Work`
+      
+    .setTimestamp();
+
+if (logChannel) {
+  logChannel.send({ embeds: [logEmbed] });
+   }
+}
+
+  
   // --- !adventure command ---
 if (command === "!adventure") {
   const beeId = args[1];
