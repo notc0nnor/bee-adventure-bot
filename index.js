@@ -311,7 +311,7 @@ if (type === "ep" && newEpLevel > oldEpLevel) {
       .setTimestamp();
 
     trackingChannel.send({
-      content: `<@${userID}>`, // assuming bee.owner is the owner's Discord ID
+      content: `<@${userId}>`, // assuming bee.owner is the owner's Discord ID
       embeds: [levelEmbed]
     });
   }
