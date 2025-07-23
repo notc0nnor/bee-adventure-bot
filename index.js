@@ -475,8 +475,9 @@ if (command === "!bee" && args[1] === "transfer") {
     return message.reply("No bee found with that ID.");
   }
 
-  const oldOwnerId = bee.userId || bee.owner || "Unknown";
-  bee.userId = newOwner.id;
+  const oldOwnerId = bee.owner || "Unknown";
+  bee.owner = newOwner.id;
+
 
   saveBeeData(beeData);
 
