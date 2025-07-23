@@ -585,6 +585,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // Add the XP and EP rewards to the bee
   bee.xp += xpReward;
 
+   // Save previous values for logging
+const prevCoins = adventureData[userId].inventory.coins;
+const prevFlowers = adventureData[userId].inventory.flowers;
+
   // Add coins and flowers found to the user’s inventory
   adventureData[userId].inventory.coins += coinsEarned;
   adventureData[userId].inventory.flowers += flowersFound;
@@ -594,10 +598,42 @@ client.on(Events.InteractionCreate, async (interaction) => {
     adventureData[userId].inventory.flowers += 1;
   }
 
-
   // Get new XP and EP levels after adding rewards
   const newXpLevel = getXpLevel(bee.xp);
   const newEpLevel = getEpLevel(bee.ep);
+
+const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
+if (logChannel && logChannel.isTextBased()) {
+  const adventureLogEmbed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setTitle("Adventure Completed")
+    .setDescription(
+      `**ID:** ${beeId}\n` +
+      `**Owner:** <@${userId}>\n\n` +
+      `**Coins:** ${coinsEarned} 🪙\n` +
+      (flowersFound > 0 ? `**Flowers:** ${flowersFound} 🌸\n` : "") +
+      `**XP:** ${xpReward} ✨`
+    )
+    .setTimestamp();
+
+  const inventoryEmbed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setTitle("Inventory Change")
+    .setDescription(
+      `**Added:**\n` +
+      `Coins: ${coinsEarned} 🪙\n` +
+      (flowersFound > 0 ? `Flowers: ${flowersFound} 🌸\n` : "") +
+      `\n**Previous:**\n` +
+      `Coins: ${prevCoins} → ${adventureData[userId].inventory.coins}\n` +
+      `Flowers: ${prevFlowers} → ${adventureData[userId].inventory.flowers}\n\n` +
+      `**To:** <@${userId}>\n` +
+      `**By:** Adventure`
+    )
+    .setTimestamp();
+
+  logChannel.send({ embeds: [adventureLogEmbed, inventoryEmbed] });
+}
+
    
 // Track level-up messages
 let levelUpMessages = [];
@@ -636,43 +672,6 @@ bee.endsAt = 0;
 saveBeeData(beeData);
 saveAdventureData(adventureData);
 
-const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
-if (logChannel && logChannel.isTextBased()) {
-  const adventureLines = [
-    `**ID:** ${beeId}`,
-    `**Owner:** <@${userId}>`,
-    `**Coins:** ${coinsEarned} 🪙`,
-    flowersFound > 0 ? `**Flowers:** ${flowersFound} 🌸` : null,
-    `**XP:** ${xpReward} ✨`
-  ].filter(Boolean).join("\n");
-
-  const inventoryLines = [
-    `**Added:**`,
-    `Coins: ${coinsEarned} 🪙`,
-    flowersFound > 0 ? `Flowers: ${flowersFound} 🌸` : null,
-    ``,
-    `**Previous → Now:**`,
-    `Coins: ${prevCoins} → ${adventureData[userId].inventory.coins}`,
-    flowersFound > 0 ? `Flowers: ${prevFlowers} → ${adventureData[userId].inventory.flowers}` : null,
-    ``,
-    `**To:** <@${userId}>`,
-    `**By:** Adventure`
-  ].filter(Boolean).join("\n");
-
-  const adventureLogEmbed = new EmbedBuilder()
-    .setColor("#ffe712")
-    .setTitle("Adventure Completed")
-    .setDescription(adventureLines)
-    .setTimestamp();
-
-  const inventoryChangeEmbed = new EmbedBuilder()
-    .setColor("#ffe712")
-    .setTitle("Inventory Change")
-    .setDescription(inventoryLines)
-    .setTimestamp();
-
-  logChannel.send({ embeds: [adventureLogEmbed, inventoryChangeEmbed] });
-}
 
   // Flavor messages for the adventure return
   const flavorMessages = [
