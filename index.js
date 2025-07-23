@@ -475,6 +475,66 @@ const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null)
     }
   }
 }
+if (command === "!work") {
+  const user = message.author;
+  const userId = user.id;
+
+  adventureData = loadAdventureData();
+  if (!adventureData[userId]) {
+    adventureData[userId] = { inventory: { coins: 0, flowers: 0 } };
+  } else if (!adventureData[userId].inventory) {
+    adventureData[userId].inventory = { coins: 0, flowers: 0 };
+  }
+
+  const prevCoins = adventureData[userId].inventory.coins;
+
+  const earned = Math.floor(Math.random() * (35 - 15 + 1)) + 15;
+
+  // Add coins
+  adventureData[userId].inventory.coins += earned;
+  saveAdventureData(adventureData);
+
+  // Random work messages
+  const workMessages = [
+  "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
+  "A mother duck comes up to you and drops some coins in your hands. You don't ask where she got it.",
+  "You do some gardening and earn some coins from a grateful swarm of bees.",
+  "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
+  "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
+  "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
+  "Some coins are left to you by a farmer after helping them on the field.",
+  "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
+  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
+  ];
+  
+  const flavor = workMessages[Math.floor(Math.random() * workMessages.length)];
+
+  // Reply with a work embed
+  const workEmbed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
+    .setTitle("Work")
+    .setDescription(`${flavor}\n\nYou earned **${earned} coins** 🪙`);
+
+  message.reply({ embeds: [workEmbed] });
+
+  // Log to logging channel
+  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+  if (logChannel && logChannel.isTextBased()) {
+    const logEmbed = new EmbedBuilder()
+      .setColor("#2b67ff")
+      .setTitle("Inventory Change")
+      .setDescription(
+        `**Added:** ${earned} coins 🪙\n` +
+        `**To:** ${user.tag} (<@${userId}>)\n` +
+        `**By:** Work\n` +
+        `**Previous:** ${prevCoins} → ${adventureData[userId].inventory.coins}`
+      )
+      .setTimestamp();
+
+    logChannel.send({ embeds: [logEmbed] });
+  }
+}
 
 });
 
