@@ -141,6 +141,30 @@ if (message.content === "!work") {
   saveAdventureData();
   const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
 
+  const workMessages = [
+  "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
+  "A mother duck comes up to you and drops some coins in your hands. You don't ask where she got it.",
+  "You do some gardening and earn some coins from a grateful swarm of bees.",
+  "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
+  "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
+  "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
+  "Some coins are left to you by a farmer after helping them on the field.",
+  "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
+  "You made lemonade for the thirsty wildlife. They were really grateful.",
+  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
+];
+
+const randomMessage = workMessages[Math.floor(Math.random() * workMessages.length)];
+
+const replyEmbed = new EmbedBuilder()
+  .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+  .setTitle("Work")
+  .setDescription(`${randomMessage} You earned **${earned}** 🪙.`)
+  .setColor("#ffe712")
+  .setTimestamp();
+
+message.reply({ embeds: [replyEmbed] });
+
   const logEmbed = new EmbedBuilder()
     .setColor("#2bff2b")
     .setTitle("Inventory Change")
