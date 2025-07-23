@@ -477,7 +477,6 @@ const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null)
 }
   // --- !work command ---
 
-  const workMessages = [
 if (command === "!work") {
   const userId = message.author.id;
   const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
