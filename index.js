@@ -59,9 +59,6 @@ const client = new Client({
 
 const TOKEN = process.env.DISCORD_TOKEN;
 let adventureData = loadAdventureData();
-// work
-const workCooldowns = new Map();
-
 
 function formatTime(ms) {
   const totalSeconds = Math.floor(ms / 1000);
@@ -115,77 +112,7 @@ client.on("messageCreate", async (message) => {
   const command = args[0].toLowerCase();
   const userId = message.author.id;
   const now = Date.now();
-  // --- !work command ---
-if (message.content === "!work") {
-  const userId = message.author.id;
-  const now = Date.now();
 
- if (!adventureData[userId]) {
-    adventureData[userId] = { inventory: { coins: 0, flowers: 0 } };
-  } else if (!adventureData[userId].inventory) {
-    adventureData[userId].inventory = { coins: 0, flowers: 0 };
-  }
-
-  const lastWorked = workCooldowns.get(userId);
-  const cooldown = 3 * 60 * 60 * 1000; // 3 hours in ms
-
-  if (lastWorked && now - lastWorked < cooldown) {
-    const remaining = formatTime(cooldown - (now - lastWorked));
-    return message.reply(`You can work again in ${remaining}.`);
-  }
-
-  // Generate random amount of coins
-  const earned = Math.floor(Math.random() * (32 - 12 + 1)) + 12;
-  const oldCoins = adventureData[userId].coins;
-  const newCoins = oldCoins + earned;
-  adventureData[userId].coins = newCoins;
-  workCooldowns.set(userId, now);
-  saveAdventureData();
-  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID);
-
-  const workMessages = [
-  "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
-  "A mother duck comes up to you and drops some coins in your hands. You don't ask where she got it.",
-  "You do some gardening and earn some coins from a grateful swarm of bees.",
-  "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
-  "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
-  "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
-  "Some coins are left to you by a farmer after helping them on the field.",
-  "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
-  "You made lemonade for the thirsty wildlife. They were really grateful.",
-  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
-];
-
-const randomMessage = workMessages[Math.floor(Math.random() * workMessages.length)];
-
-const replyEmbed = new EmbedBuilder()
-  .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-  .setTitle("Work")
-  .setDescription(`${randomMessage} You earned **${earned}** 🪙.`)
-  .setColor("#ffe712")
-  .setTimestamp();
-
-message.reply({ embeds: [replyEmbed] });
-
-  const logEmbed = new EmbedBuilder()
-    .setColor("#2bff2b")
-    .setTitle("Inventory Change")
-    .setDescription(
-      `**Added:**\n` +
-      `Coins: ${earned} 🪙\n` +
-      `\n**Previous:**\n` +
-      `Coins: ${oldCoins} → ${newCoins}\n` +
-      `**To:** <@${userId}>\n` +
-      `**By:** Work`
-    )
-    .setTimestamp();
-
-if (logChannel) {
-  logChannel.send({ embeds: [logEmbed] });
-   }
-}
-
-  
   // --- !adventure command ---
 if (command === "!adventure") {
   const beeId = args[1];
