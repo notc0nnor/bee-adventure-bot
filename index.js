@@ -146,9 +146,9 @@ if (message.content === "!work") {
     .setTitle("Inventory Change")
     .setDescription(
       `**Added:**\n` +
-      `Coins: ${coinsEarned} 🪙\n` +
+      `Coins: ${earned} 🪙\n` +
       `\n**Previous:**\n` +
-      `Coins: ${prevCoins} → ${adventureData[userId].inventory.coins}\n` +
+      `Coins: ${oldCoins} → ${newCoins}\n` +
       `**To:** <@${userId}>\n` +
       `**By:** Work`
     )
