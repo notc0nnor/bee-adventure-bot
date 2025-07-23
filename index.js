@@ -158,7 +158,26 @@ if (command === "!adventure") {
 // --- !work command ---
 
   const workMessages = [
-  "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
+if (command === "!work") {
+  const userId = message.author.id;
+  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+  const adventureData = loadAdventureData();
+
+  if (!adventureData[userId]) {
+    adventureData[userId] = { inventory: { coins: 0, flowers: 0 } };
+  } else if (!adventureData[userId].inventory) {
+    adventureData[userId].inventory = { coins: 0, flowers: 0 };
+  }
+
+  const before = adventureData[userId].inventory.coins;
+  const coinsEarned = Math.floor(Math.random() * 21) + 12; // 12–32
+
+  adventureData[userId].inventory.coins += coinsEarned;
+  saveAdventureData(adventureData);
+
+  // Response to user
+  const responses = [
+   "You leave some fermenting fruit out for the insects, birds and other animals to enjoy. They stumble home and thank you for your generosity.",
   "A mother duck comes up to you and drops some coins in your hands. You don't ask where she got it.",
   "You do some gardening and earn some coins from a grateful swarm of bees.",
   "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
@@ -167,61 +186,29 @@ if (command === "!adventure") {
   "Some coins are left to you by a farmer after helping them on the field.",
   "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
   "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
-];
+  ];
+  const response = responses[Math.floor(Math.random() * responses.length)];
 
-if (command === "!work") {
-  adventureData = loadAdventureData(); // Load existing data
-  const userId = message.author.id;
-  const now = Date.now();
+  const embed = new EmbedBuilder()
+    .setColor("#ffe712")
+    .setTitle("Work Complete 🛠️")
+    .setDescription(`${response}\n\nYou earned **${coinsEarned}** 🪙`)
+    .setTimestamp();
 
-  // Create user inventory if not exists
-  if (!adventureData[userId]) {
-    adventureData[userId] = { inventory: { coins: 0, flowers: 0 }, workCooldown: 0 };
-  }
+  await message.reply({ embeds: [embed] });
 
-  if (!adventureData[userId].inventory) {
-    adventureData[userId].inventory = { coins: 0, flowers: 0 };
-  }
-
-  const cooldown = adventureData[userId].workCooldown || 0;
-  const threeHours = 3 * 60 * 60 * 1000;
-
-  // Check cooldown
-  if (now < cooldown) {
-    const timeLeft = formatTime(cooldown - now);
-    return message.reply(`You can work again in **${timeLeft}**.`);
-  }
-
-  // Give coins
-  const coinsEarned = Math.floor(Math.random() * 21) + 12; // 12–32
-  adventureData[userId].inventory.coins += coinsEarned;
-  adventureData[userId].workCooldown = now + threeHours;
-  saveAdventureData(adventureData);
-
-  // Tell user
- const workFlavor = workMessages[Math.floor(Math.random() * workMessages.length)];
-const rewardEmbed = new EmbedBuilder()
-  .setColor("#ffe712")
-  .setTitle("You went to work!")
-  .setDescription(`${workFlavor}\n\nYou earned **${coinsEarned} coins**!`)
-  .setTimestamp();
-
-await message.reply({ embeds: [rewardEmbed] });
-
-
-  // Log it
-  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
+  // Logging
   if (logChannel && logChannel.isTextBased()) {
     const logEmbed = new EmbedBuilder()
-       .setColor("#2bffff")
-    .setTitle("Inventory Change")
-    .setDescription(
-      `**Added:**\nCoins: ${coinsEarned} 🪙\n\n` +
-      `**Previous:**\nCoins: ${before} → ${adventureData[userId].inventory.coins}\n\n` +
-      `**To:** <@${userId}>\n` +
-      `**By:** Work`
-    )
-    .setTimestamp();
+      .setColor("#2ba3ff")
+      .setTitle("Inventory Change")
+      .setDescription(
+        `**Added:**\nCoins: ${coinsEarned} 🪙\n\n` +
+        `**Previous:**\nCoins: ${before} → ${adventureData[userId].inventory.coins}\n\n` +
+        `**To:** <@${userId}>\n` +
+        `**By:** Work`
+      )
+      .setTimestamp();
 
     logChannel.send({ embeds: [logEmbed] });
   }
