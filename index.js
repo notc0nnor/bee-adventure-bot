@@ -748,7 +748,7 @@ if (trackingChannel && trackingChannel.isTextBased()) {
     .setTimestamp();
 
   logChannel.send({ embeds: [inventoryEmbed] });
-}
+ 
 
    
 // Track level-up messages
