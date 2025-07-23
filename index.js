@@ -206,6 +206,28 @@ if (command === "!bee" && args[1] === "create") {
   return message.reply(`Bee ${beeId} created for ${targetUser.username}.`);
 }
 
+  // delete bee
+if (command === "!bee" && args[1] === "delete") {
+  if (message.author.id !== "539820286787452938") {
+    return message.reply("You can't do that.");
+  }
+
+  const beeId = args[2];
+  if (!beeId) {
+    return message.reply("Usage: !bee delete [BeeID]");
+  }
+
+  const beeData = loadBeeData();
+  if (!beeData[beeId]) {
+    return message.reply("No bee found with that ID.");
+  }
+
+  delete beeData[beeId];
+  saveBeeData(beeData);
+
+  return message.reply(`Bee **${beeId}** has been deleted.`);
+}
+
 if (command === "!bee") {
   const beeData = loadBeeData();
 
