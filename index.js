@@ -205,55 +205,7 @@ if (command === "!bee" && args[1] === "create") {
 
   return message.reply(`Bee ${beeId} created for ${targetUser.username}.`);
 }
-  // --- !bee transfer command ---
-if (command === "!bee" && args[1] === "transfer") {
-  if (message.author.id !== "539820286787452938") {
-    return message.reply("You are not authorized to use this command.");
-  }
 
-  if (args.length < 4) {
-    return message.reply("Usage: `!bee transfer [BeeID] [@newOwner]`");
-  }
-
-  const beeId = args[2];
-  const newOwner = message.mentions.users.first();
-
-  if (!newOwner) {
-    return message.reply("Please mention the new owner.");
-  }
-
-  const beeData = loadBeeData();
-  const bee = beeData[beeId];
-
-  if (!bee) {
-    return message.reply("No bee found with that ID.");
-  }
-
-  const oldOwnerId = bee.owner || "Unknown";
-  bee.owner = newOwner.id;
-
-
-  saveBeeData(beeData);
-
-  await message.reply(`Bee **${beeId}** has been transferred from <@${oldOwnerId}> to <@${newOwner.id}>.`);
-
-  const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null);
-  if (logChannel && logChannel.isTextBased()) {
-    const logEmbed = new EmbedBuilder()
-      .setColor("#a72bff")
-      .setTitle("🐝 Ownership Transfer")
-      .setDescription(
-        `**Bee ID:** ${beeId}\n` +
-        `**From:** <@${oldOwnerId}>\n` +
-        `**To:** <@${newOwner.id}>\n` +
-        `**By:** ${message.author.tag} (<@${message.author.id}>)`
-      )
-      .setTimestamp();
-
-    logChannel.send({ embeds: [logEmbed] });
-  }
-  return;
-}
 if (command === "!bee") {
   const beeData = loadBeeData();
 
