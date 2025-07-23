@@ -120,8 +120,10 @@ if (message.content === "!work") {
   const userId = message.author.id;
   const now = Date.now();
 
-  if (!adventureData[userId]) {
-    adventureData[userId] = { coins: 0 };
+ if (!adventureData[userId]) {
+    adventureData[userId] = { inventory: { coins: 0, flowers: 0 } };
+  } else if (!adventureData[userId].inventory) {
+    adventureData[userId].inventory = { coins: 0, flowers: 0 };
   }
 
   const lastWorked = workCooldowns.get(userId);
