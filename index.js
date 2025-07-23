@@ -252,6 +252,7 @@ if (command === "!bee" && args[1] === "transfer") {
 
     logChannel.send({ embeds: [logEmbed] });
   }
+  return;
 }
 if (command === "!bee") {
   const beeData = loadBeeData();
