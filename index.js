@@ -291,13 +291,31 @@ if (command === "!add") {
 
     const beeData = loadBeeData();
     const bee = beeData[beeId];
+    const oldEpLevel = getEpLevel(bee.ep); // before adding EP
     if (!bee) {
       return message.reply("No bee found with that ID.");
     }
 
     const before = bee[type] || 0;
     bee[type] += amount;
+    const newEpLevel = getEpLevel(bee.ep); // after adding EP
     saveBeeData(beeData);
+    
+if (type === "ep" && newEpLevel > oldEpLevel) {
+  const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
+  if (trackingChannel && trackingChannel.isTextBased()) {
+    const levelEmbed = new EmbedBuilder()
+      .setColor("#ffe712")
+      .setTitle(`🐝 Bee ${beeId} has leveled up!`)
+      .setDescription(`🌼 Your bee **${beeId}** leveled up in EP! *Level ${oldEpLevel} → Level ${newEpLevel}* 🎊`)
+      .setTimestamp();
+
+    trackingChannel.send({
+      content: `<@${userID}>`, // assuming bee.owner is the owner's Discord ID
+      embeds: [levelEmbed]
+    });
+  }
+}
 
     await message.reply(`Added ${amount} ${type.toUpperCase()} to Bee ${beeId}.`);
 
@@ -337,7 +355,7 @@ if (command === "!add") {
 
     if (logChannel && logChannel.isTextBased()) {
       const logEmbed = new EmbedBuilder()
-        .setColor("#32CD32")
+        .setColor("#d40000")
         .setTitle("Inventory Change")
         .setDescription(
           `**Added:** ${amount} ${type}\n` +
@@ -419,7 +437,7 @@ const logChannel = await client.channels.fetch(LOG_CHANNEL_ID).catch(() => null)
 
     if (logChannel && logChannel.isTextBased()) {
       const logEmbed = new EmbedBuilder()
-        .setColor("#ff6347")
+        .setColor("#d40000")
         .setTitle("Inventory Change")
         .setDescription(
           `**Removed:** ${amount} ${type}\n` +
@@ -605,7 +623,7 @@ const prevFlowers = adventureData[userId].inventory.flowers;
 const logChannel = client.channels.cache.get(LOG_CHANNEL_ID);
 if (logChannel && logChannel.isTextBased()) {
   const adventureLogEmbed = new EmbedBuilder()
-    .setColor("#ffe712")
+    .setColor("#2ff535")
     .setTitle("Adventure Completed")
     .setDescription(
       `**ID:** ${beeId}\n` +
@@ -617,7 +635,7 @@ if (logChannel && logChannel.isTextBased()) {
     .setTimestamp();
 
   const inventoryEmbed = new EmbedBuilder()
-    .setColor("#ffe712")
+    .setColor("#ffb914")
     .setTitle("Inventory Change")
     .setDescription(
       `**Added:**\n` +
