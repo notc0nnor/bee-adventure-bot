@@ -355,7 +355,7 @@ if (type === "ep" && newEpLevel > oldEpLevel) {
 
     if (logChannel && logChannel.isTextBased()) {
       const logEmbed = new EmbedBuilder()
-        .setColor("#d40000")
+        .setColor("#2ba3ff")
         .setTitle("Inventory Change")
         .setDescription(
           `**Added:** ${amount} ${type}\n` +
