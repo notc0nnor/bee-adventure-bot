@@ -151,7 +151,7 @@ if (message.content === "!work") {
       `Coins: ${prevCoins} → ${adventureData[userId].inventory.coins}\n` +
       `**To:** <@${userId}>\n` +
       `**By:** Work`
-      
+    )
     .setTimestamp();
 
 if (logChannel) {
