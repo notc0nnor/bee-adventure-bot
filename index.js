@@ -598,11 +598,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
       .setDescription(`Your Bee is still recovering and will be ready in **${cooldownLeft}**.`);
     return interaction.reply({ embeds: [embed], ephemeral: true });
   }
-
+// change time
   // Define rewards based on duration
   let durationMs, cooldownMs, minCoins, maxCoins, flowerChance, maxFlowers;
   if (durationStr === "1h") {
-    durationMs = 1 * 60 * 60 * 1000;
+    durationMs = 1 * 60 * 1000; //1 * 60 * 60 * 1000
     cooldownMs = 12 * 60 * 60 * 1000;
     minCoins = 7;
     maxCoins = 15;
@@ -675,11 +675,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const oldXpLevel = getXpLevel(bee.xp);
   const oldEpLevel = getEpLevel(bee.ep);
 
-
+// change time 1 * 60 * 60 * 1000
   // XP and EP rewards based on adventure duration
   let xpReward = 0;
   let epReward = 0;
-  if (bee.durationMs === 1 * 60 * 60 * 1000) {
+  if (bee.durationMs === 1 * 60 * 1000) {
     xpReward = 5;
     epReward = 0;
   } else if (bee.durationMs === 3 * 60 * 60 * 1000) {
