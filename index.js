@@ -524,7 +524,7 @@ if (command === "!work") {
   "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
   "Some coins are left to you by a farmer after helping them on the field.",
   "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
-  "Oh no! You caught a bear cub nose deep in a tub of pollen! It thanks you sheepishly for cleaning it up with some coins."
+  "Oh no! You caught a bear cub nose deep in a tub of honey! It thanks you sheepishly for cleaning it up with some coins."
   ];
   const flavor = workMessages[Math.floor(Math.random() * workMessages.length)];
 
@@ -598,19 +598,19 @@ client.on(Events.InteractionCreate, async (interaction) => {
       .setDescription(`Your Bee is still recovering and will be ready in **${cooldownLeft}**.`);
     return interaction.reply({ embeds: [embed], ephemeral: true });
   }
-// change time
+  
   // Define rewards based on duration
   let durationMs, cooldownMs, minCoins, maxCoins, flowerChance, maxFlowers;
   if (durationStr === "1h") {
-    durationMs = 30 * 1000; //1 * 60 * 60 * 1000
-    cooldownMs = 30 * 1000; //12 * 60 * 60 * 1000
+    durationMs = 1 * 60 * 60 * 1000;
+    cooldownMs = 12 * 60 * 60 * 1000;
     minCoins = 7;
     maxCoins = 15;
     flowerChance = 0.02;
     maxFlowers = 1;
   } else if (durationStr === "3h") {
-    durationMs = 1 * 60 * 1000; //3 * 60 * 60 * 1000
-    cooldownMs = 1 * 60 * 1000; //24 * 60 * 60 * 1000
+    durationMs = 3 * 60 * 60 * 1000;
+    cooldownMs = 24 * 60 * 60 * 1000;
     minCoins = 12;
     maxCoins = 30;
     flowerChance = 0.05;
@@ -675,14 +675,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const oldXpLevel = getXpLevel(bee.xp);
   const oldEpLevel = getEpLevel(bee.ep);
 
-// change time 1 * 60 * 60 * 1000 | 3 * 60 * 60 * 1000
   // XP and EP rewards based on adventure duration
   let xpReward = 0;
   let epReward = 0;
-  if (bee.durationMs === 30 * 1000) {
+  if (bee.durationMs === 1 * 60 * 60 * 1000) {
     xpReward = 5;
     epReward = 0;
-  } else if (bee.durationMs === 1 * 60 * 1000) {
+  } else if (bee.durationMs === 3 * 60 * 60 * 1000) {
     xpReward = 12;
     epReward = 0;
   } else if (bee.durationMs === 8 * 60 * 60 * 1000) {
