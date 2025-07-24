@@ -602,8 +602,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // Define rewards based on duration
   let durationMs, cooldownMs, minCoins, maxCoins, flowerChance, maxFlowers;
   if (durationStr === "1h") {
-    durationMs = 1 * 60 * 1000; //1 * 60 * 60 * 1000
-    cooldownMs = 1 * 60 * 1000; //12 * 60 * 60 * 1000
+    durationMs = 30 * 1000; //1 * 60 * 60 * 1000
+    cooldownMs = 30 * 1000; //12 * 60 * 60 * 1000
     minCoins = 7;
     maxCoins = 15;
     flowerChance = 0.02;
@@ -679,7 +679,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   // XP and EP rewards based on adventure duration
   let xpReward = 0;
   let epReward = 0;
-  if (bee.durationMs === 1 * 60 * 1000) {
+  if (bee.durationMs === 30 * 1000) {
     xpReward = 5;
     epReward = 0;
   } else if (bee.durationMs === 1 * 60 * 1000) {
