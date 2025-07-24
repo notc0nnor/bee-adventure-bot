@@ -719,9 +719,10 @@ const prevFlowers = adventureData[userId].inventory.flowers;
    //help
   const trackingChannel = client.channels.cache.get(TRACKING_CHANNEL_ID);
 if (trackingChannel && trackingChannel.isTextBased()) {
-  const before = bee.xp || 0; // prior XP value
-  const after = before + xpReward;
-
+  const type = "xp";
+  const before = bee[type] || 0;
+  const after = before + xpReward; 
+  
   const statEmbed = new EmbedBuilder()
     .setColor("#2ff535")
     .setTitle("Bee Stat Change")
