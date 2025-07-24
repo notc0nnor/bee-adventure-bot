@@ -603,7 +603,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   let durationMs, cooldownMs, minCoins, maxCoins, flowerChance, maxFlowers;
   if (durationStr === "1h") {
     durationMs = 1 * 60 * 1000; //1 * 60 * 60 * 1000
-    cooldownMs = 12 * 60 * 60 * 1000;
+    cooldownMs = 1 * 60 * 1000; //12 * 60 * 60 * 1000
     minCoins = 7;
     maxCoins = 15;
     flowerChance = 0.02;
