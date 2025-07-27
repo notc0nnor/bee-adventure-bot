@@ -163,6 +163,7 @@ client.on('messageCreate', async (message) => {
   // If leveled up, send level up embed
   if (newLevel > prevLevel) {
     trackChannel.send({
+      content: `<@${bee.ownerId}>`,
       embeds: [{
         title: `Bee ${bee.beeId} has leveled up!`,
         color: 0xffe419,
@@ -215,6 +216,7 @@ client.on('messageCreate', async (message) => {
   // Check for level up
   if (newLevelInfo.level > prevLevelInfo.level) {
     trackChannel.send({
+      content: `<@${bee.ownerId}>`,
       embeds: [{
         title: `Bee ${bee.beeId} has leveled up!`,
         color: 0xffe419,
