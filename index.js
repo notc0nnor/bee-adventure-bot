@@ -36,7 +36,7 @@ client.once('ready', () => {
 
 const { getXpLevel } = require('./levelUtils');
 
-// ---!bee create command---
+// ---!bee commands---
 const Bee = require('./models/Bee');
 
 client.on('messageCreate', async (message) => {
@@ -124,6 +124,58 @@ client.on('messageCreate', async (message) => {
 
   return message.reply(`🐝 Your Bees:\n${list}`);
 }
+// ---!add xp---
+  if (command === '!add' && args[1] === 'xp') {
+  if (message.author.id !== ADMIN_ID) {
+    return message.reply('You do not have permission to use this command.');
+  }
+
+  const amount = parseInt(args[2]);
+  const beeId = args[3];
+
+  if (isNaN(amount) || !beeId) {
+    return message.reply('Usage: `!add xp [amount] [beeId]`');
+  }
+
+  const bee = await Bee.findOne({ beeId });
+  if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
+
+  const prevXp = bee.xp;
+  const prevLevel = getXpLevel(prevXp);
+
+  // Add XP and save
+  bee.xp += amount;
+  await bee.save();
+
+  const newLevel = getXpLevel(bee.xp);
+
+  // Send stat change embed to log channel
+  const trackChannel = await client.channels.fetch('1394792906849652977');
+  trackChannel.send({
+    embeds: [{
+      title: 'Bee Stat Change',
+      color: 0x8140d6,
+      description: `Added: **${amount} XP**\nTo: \`${bee.beeId}\`\n\n**XP**: ${prevXp} → ${bee.xp}`,
+      timestamp: new Date(),
+    }]
+  });
+
+  // If leveled up, send level up embed
+  if (newLevel > prevLevel) {
+    trackChannel.send({
+      embeds: [{
+        title: `Bee ${bee.beeId} has leveled up!`,
+        color: 0xffe419,
+        description: `Your bee \`${bee.beeId}\` leveled up in **XP**!\nLevel ${prevLevel} → Level ${newLevel}`,
+        timestamp: new Date(),
+      }]
+    });
+  }
+
+  return message.reply(`Added ${amount} XP to bee \`${bee.beeId}\`.`);
+}
+
+
 });
 
 // Log in bot
