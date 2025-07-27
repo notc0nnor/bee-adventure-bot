@@ -32,9 +32,9 @@ app.listen(PORT, () => {
 client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
-// XP level helper
+// XP/EP level helper
 
-const { getXpLevel } = require('./levelUtils');
+const { getXpLevel, getEpLevel } = require('./levelUtils');
 
 // ---!bee commands---
 const Bee = require('./models/Bee');
