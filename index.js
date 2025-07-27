@@ -34,7 +34,7 @@ client.once('ready', () => {
 });
 // XP/EP level helper
 
-const { getXpLevel, getEpLevel } = require('./levelUtils');
+const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded } = require('./levelUtils');
 
 // ---!bee commands---
 const Bee = require('./models/Bee');
@@ -105,15 +105,30 @@ client.on('messageCreate', async (message) => {
 
     const owner = await client.users.fetch(bee.ownerId);
 
-    return message.reply({
-      embeds: [{
-        color: 0xffe419,
-        title: `Bee ID: ${bee.beeId}`,
-        description: `Owner: ${owner.tag}\nXP: ${bee.xp}\nEP: ${bee.ep}`,
-        footer: { text: 'Apis Equinus' },
-        timestamp: new Date(),
-      }]
-    });
+const xpLevel = getXpLevel(bee.xp);
+const xpNext = getXpNeeded(xpLevel + 1) - bee.xp;
+
+const epLevel = getEpLevel(bee.ep);
+const epNext = getEpNeeded(epLevel + 1) - bee.ep;
+
+return message.reply({
+  embeds: [{
+    color: 0xffe419,
+    title: `🐝 ID: ${bee.beeId}`,
+    description: [
+      `Owner: ${owner.tag}`,
+      ``,
+      `Level: ${xpLevel}`,
+      `XP: ${bee.xp} (${xpNext} needed for Level ${xpLevel + 1})`,
+      ``,
+      `Level: ${epLevel}`,
+      `EP: ${bee.ep} (${epNext} needed for Level ${epLevel + 1})`
+    ].join('\n'),
+    footer: { text: 'Apis Equinus' },
+    timestamp: new Date(),
+  }]
+});
+
   }
 
   // List all bees for the user
