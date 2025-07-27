@@ -32,6 +32,9 @@ app.listen(PORT, () => {
 client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
+// XP level helper
+
+const { getXpLevel } = require('./levelUtils');
 
 // ---!bee create command---
 const Bee = require('./models/Bee');
@@ -91,7 +94,7 @@ client.on('messageCreate', async (message) => {
       return message.reply(`No bee found with ID \`${beeId}\`.`);
     }
 
-    return message.reply(`🗑️ Bee \`${beeId}\` has been deleted.`);
+    return message.reply(`Bee \`${beeId}\` has been deleted.`);
   }
 
   // View specific bee
@@ -107,7 +110,7 @@ client.on('messageCreate', async (message) => {
         color: 0xffe419,
         title: `Bee ID: ${bee.beeId}`,
         description: `Owner: ${owner.tag}\nXP: ${bee.xp}\nEP: ${bee.ep}`,
-        footer: { text: 'Apis Equinus Bot' },
+        footer: { text: 'Apis Equinus' },
         timestamp: new Date(),
       }]
     });
