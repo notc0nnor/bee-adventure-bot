@@ -33,7 +33,7 @@ client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
-// ---!add command---
+// ---!bee create command---
 const Bee = require('./models/Bee');
 
 client.on('messageCreate', async (message) => {
@@ -72,7 +72,38 @@ client.on('messageCreate', async (message) => {
     await newBee.save();
     message.reply(`Created bee \`${beeId}\` for <@${user.id}>`);
   }
+
+  // New: show bee info or list of bees for user
+  if (command === '!bee') {
+    // If an ID is provided, show that bee
+    if (args[1]) {
+      const beeId = args[1];
+      const bee = await Bee.findOne({ beeId });
+      if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
+
+      const owner = await client.users.fetch(bee.ownerId);
+
+      return message.reply({
+        embeds: [{
+          color: 0xffe419,
+          title: `Bee ID: ${bee.beeId}`,
+          description: `Owner: ${owner.tag}\nXP: ${bee.xp}\nEP: ${bee.ep}`,
+          footer: { text: 'Apis Equinus Bot' },
+          timestamp: new Date(),
+        }]
+      });
+    }
+
+    // If no ID provided, list all bees for message author
+    const bees = await Bee.find({ ownerId: message.author.id });
+    if (!bees.length) return message.reply('You have no bees.');
+
+    let list = bees.map(b => `• \`${b.beeId}\` (XP: ${b.xp}, EP: ${b.ep})`).join('\n');
+
+    return message.reply(`🐝 Your Bees:\n${list}`);
+  }
 });
+
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
