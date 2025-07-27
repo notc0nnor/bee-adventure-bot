@@ -43,5 +43,17 @@ function getXpLevel(xp) {
 
   return 0; // Default to level 0
 }
+function getXpNeeded(level) {
+  return level * level * 100;
+}
 
-module.exports = { getXpLevel, getEpLevel };
+function getEpNeeded(level) {
+  return level * level * 80;
+}
+
+module.exports = {
+  getXpLevel,
+  getEpLevel,
+  getXpNeeded,
+  getEpNeeded
+};
