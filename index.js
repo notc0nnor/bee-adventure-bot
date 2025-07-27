@@ -226,6 +226,32 @@ client.on('messageCreate', async (message) => {
 
   return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
 }
+//---!inventory 
+
+  const Inventory = require('./models/Inventory');
+if (command === '!inventory') {
+  const userId = message.author.id;
+
+  // Find or create the inventory
+  let inventory = await Inventory.findOne({ userId });
+  if (!inventory) {
+    inventory = new Inventory({ userId });
+    await inventory.save();
+  }
+
+  return message.reply({
+    embeds: [{
+      color: 0xffe419,
+      title: `${message.author.username}'s Inventory 🐝`,
+      fields: [
+        { name: 'Coins', value: `${inventory.coins} 🪙`, inline: true },
+        { name: 'Flowers', value: `${inventory.flowers} 🌸`, inline: true },
+      ],
+      footer: { text: 'Apis Equinus' },
+      timestamp: new Date(),
+    }]
+  });
+}
 
 });
 
