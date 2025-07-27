@@ -330,8 +330,97 @@ if (command === '!add' && args[1] === 'coins') {
     }],
   });
 }
+// --!remove coins---
+if (command === '!remove' && args[1] === 'coins') {
+  if (message.author.id !== ADMIN_ID) {
+    return message.reply('You do not have permission to use this command.');
+  }
 
+  const amount = parseInt(args[2], 10);
+  const user = message.mentions.users.first();
 
+  if (isNaN(amount) || !user) {
+    return message.reply('Usage: `!remove coins [amount] @user`');
+  }
+
+  let inventory = await Inventory.findOne({ userId: user.id });
+  if (!inventory) {
+    return message.reply(`<@${user.id}> has no inventory.`);
+  }
+
+  const previousCoins = inventory.coins;
+
+  if (amount > inventory.coins) {
+    return message.reply(`<@${user.id}> doesn't have that many coins.`);
+  }
+
+  inventory.coins -= amount;
+  await inventory.save();
+
+  message.reply(`Removed ${amount} 🪙 from <@${user.id}>'s inventory.`);
+
+  const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+  inventoryLogChannel.send({
+    embeds: [{
+      color: 0xe81902,
+      title: 'Inventory Change',
+      description: [
+        `**Removed:** ${amount} 🪙`,
+        `**From:** <@${user.id}>`,
+        ``,
+        `**Coins:** ${previousCoins} → ${inventory.coins}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
+  
+//---!remove flowers---
+  if (command === '!remove' && args[1] === 'flowers') {
+  if (message.author.id !== ADMIN_ID) {
+    return message.reply('You do not have permission to use this command.');
+  }
+
+  const amount = parseInt(args[2], 10);
+  const user = message.mentions.users.first();
+
+  if (isNaN(amount) || !user) {
+    return message.reply('Usage: `!remove flowers [amount] @user`');
+  }
+
+  let inventory = await Inventory.findOne({ userId: user.id });
+  if (!inventory) {
+    return message.reply(`<@${user.id}> has no inventory.`);
+  }
+
+  const previousFlowers = inventory.flowers;
+
+  if (amount > inventory.flowers) {
+    return message.reply(`<@${user.id}> doesn't have that many flowers.`);
+  }
+
+  inventory.flowers -= amount;
+  await inventory.save();
+
+  message.reply(`Removed ${amount} 🌸 from <@${user.id}>'s inventory.`);
+
+  const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+  inventoryLogChannel.send({
+    embeds: [{
+      color: 0xe88102,
+      title: 'Inventory Change',
+      description: [
+        `**Removed:** ${amount} 🌸`,
+        `**From:** <@${user.id}>`,
+        ``,
+        `**Flowers:** ${previousFlowers} → ${inventory.flowers}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
+
+  
 });
 
 // Log in bot
