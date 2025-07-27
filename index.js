@@ -291,6 +291,45 @@ if (command === '!add' && args[1] === 'coins') {
     }],
   });
 }
+//---!add flowers---
+  if (command === '!add' && args[1] === 'flowers') {
+  if (message.author.id !== ADMIN_ID) {
+    return message.reply('You do not have permission to use this command.');
+  }
+
+  const amount = parseInt(args[2], 10);
+  const user = message.mentions.users.first();
+
+  if (isNaN(amount) || !user) {
+    return message.reply('Usage: `!add flowers [amount] @user`');
+  }
+
+  let inventory = await Inventory.findOne({ userId: user.id });
+  if (!inventory) {
+    inventory = new Inventory({ userId: user.id });
+  }
+
+  const previousFlowers = inventory.flowers;
+  inventory.flowers += amount;
+  await inventory.save();
+
+  message.reply(`Added ${amount} 🌸 to <@${user.id}>'s inventory.`);
+
+  const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+  inventoryLogChannel.send({
+    embeds: [{
+      color: 0x5050fa,
+      title: 'Inventory Change',
+      description: [
+        `**Added:** ${amount} 🌸`,
+        `**To:** <@${user.id}>`,
+        ``,
+        `**Flowers:** ${previousFlowers} → ${inventory.flowers}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
 
 
 });
