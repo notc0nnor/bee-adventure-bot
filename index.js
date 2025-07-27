@@ -35,6 +35,16 @@ client.once('ready', () => {
 // XP/EP level helper
 
 const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded } = require('./levelUtils');
+const ADVENTURE_CHANNEL_ID = '1393923129008586753';
+
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  ChannelType,
+} = require('discord.js');
+
 
 // ---!bee commands---
 const Bee = require('./models/Bee');
@@ -435,6 +445,48 @@ if (command === '!remove' && args[1] === 'coins') {
   });
 }
 
+// --- !adventure [ID] command ---
+if (command === '!adventure') {
+  // Check correct channel
+  if (message.channel.id !== ADVENTURE_CHANNEL_ID) {
+    return message.reply('Please visit <#1393923129008586753> to adventure!');
+  }
+
+  const beeId = args[1];
+  if (!beeId) return message.reply('You must specify an ID: `!adventure [ID]`');
+
+  const bee = await Bee.findOne({ beeId });
+  if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
+  if (bee.ownerId !== message.author.id) {
+    return message.reply('You do not own this bee.');
+  }
+
+  // Create embed
+  const embed = new EmbedBuilder()
+    .setColor(0xffe419)
+    .setTitle(`Adventure Time? 🌸 \`${beeId}\``)
+    .setDescription('How long does your Bee want to adventure for?')
+    .setFooter({ text: 'Pick one option below to start the adventure!' });
+
+  // Create buttons
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`adventure_1h_${beeId}`)
+      .setLabel('1h Adventure')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId(`adventure_3h_${beeId}`)
+      .setLabel('3h Adventure')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId(`adventure_8h_${beeId}`)
+      .setLabel('8h Adventure')
+      .setStyle(ButtonStyle.Success),
+  );
+
+  // Send the embed with buttons
+  await message.reply({ embeds: [embed], components: [row] });
+}
 
 
 });
