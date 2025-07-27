@@ -175,6 +175,57 @@ client.on('messageCreate', async (message) => {
   return message.reply(`Added ${amount} XP to bee \`${bee.beeId}\`.`);
 }
 
+//---!add ep---
+  if (command === '!add' && args[1] === 'ep') {
+  if (message.author.id !== ADMIN_ID) {
+    return message.reply('You do not have permission to use this command.');
+  }
+
+  const amount = parseInt(args[2]);
+  const beeId = args[3];
+
+  if (isNaN(amount) || !beeId) {
+    return message.reply('Usage: `!add ep [amount] [beeId]`');
+  }
+
+  const bee = await Bee.findOne({ beeId });
+  if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
+
+  const prevEp = bee.ep;
+  const prevLevelInfo = getEpLevel(prevEp);
+
+  // Update and save
+  bee.ep += amount;
+  await bee.save();
+
+  const newLevelInfo = getEpLevel(bee.ep);
+
+  const trackChannel = await client.channels.fetch('1394792906849652977');
+
+  // Send regular EP update log
+  trackChannel.send({
+    embeds: [{
+      title: 'Bee Stat Change',
+      color: 0xfa50d8,
+      description: `Added: **${amount} EP**\nTo: \`${bee.beeId}\`\n\n**EP**: ${prevEp} → ${bee.ep}`,
+      timestamp: new Date(),
+    }]
+  });
+
+  // Check for level up
+  if (newLevelInfo.level > prevLevelInfo.level) {
+    trackChannel.send({
+      embeds: [{
+        title: `Bee ${bee.beeId} has leveled up!`,
+        color: 0xffe419,
+        description: `Your bee \`${bee.beeId}\` leveled up in **EP**!\nLevel: **${prevLevelInfo.name}** → **${newLevelInfo.name}**`,
+        timestamp: new Date(),
+      }]
+    });
+  }
+
+  return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
+}
 
 });
 
