@@ -45,7 +45,11 @@ client.on('messageCreate', async (message) => {
 
   // Only allow admin to use this command
   const ADMIN_ID = '539820286787452938';
-  if (command === '!bee' && args[1] === 'create') {
+  if (command === '!bee') {
+  const subcommand = args[1];
+
+  // Admin: create
+  if (subcommand === 'create') {
     if (message.author.id !== ADMIN_ID) {
       return message.reply('You don’t have permission to use this command.');
     }
@@ -57,23 +61,22 @@ client.on('messageCreate', async (message) => {
       return message.reply('Usage: `!bee create [ID] @user`');
     }
 
-    // Check if the bee ID already exists
     const existing = await Bee.findOne({ beeId });
     if (existing) {
       return message.reply('A bee with that ID already exists.');
     }
 
-    // Create the new bee
     const newBee = new Bee({
       beeId,
       ownerId: user.id,
     });
 
     await newBee.save();
-    message.reply(`Created bee \`${beeId}\` for <@${user.id}>`);
+    return message.reply(`Created bee \`${beeId}\` for <@${user.id}>`);
   }
-// ---!bee delete command---
-    if (command === '!bee' && args[1] === 'delete') {
+
+  // Admin: delete
+  if (subcommand === 'delete') {
     if (message.author.id !== ADMIN_ID) {
       return message.reply('You don’t have permission to use this command.');
     }
@@ -88,40 +91,37 @@ client.on('messageCreate', async (message) => {
       return message.reply(`No bee found with ID \`${beeId}\`.`);
     }
 
-    return message.reply(`Bee \`${beeId}\` has been deleted.`);
+    return message.reply(`🗑️ Bee \`${beeId}\` has been deleted.`);
   }
 
-  // ---!bee command ---
-  if (command === '!bee') {
-    // If an ID is provided, show that bee
-    if (args[1]) {
-      const beeId = args[1];
-      const bee = await Bee.findOne({ beeId });
-      if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
+  // View specific bee
+  if (subcommand) {
+    const beeId = subcommand;
+    const bee = await Bee.findOne({ beeId });
+    if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
 
-      const owner = await client.users.fetch(bee.ownerId);
+    const owner = await client.users.fetch(bee.ownerId);
 
-      return message.reply({
-        embeds: [{
-          color: 0xffe419,
-          title: `Bee ID: ${bee.beeId}`,
-          description: `Owner: ${owner.tag}\nXP: ${bee.xp}\nEP: ${bee.ep}`,
-          footer: { text: 'Apis Equinus Bot' },
-          timestamp: new Date(),
-        }]
-      });
-    }
-
-    // If no ID provided, list all bees for message author
-    const bees = await Bee.find({ ownerId: message.author.id });
-    if (!bees.length) return message.reply('You have no bees.');
-
-    let list = bees.map(b => `• \`${b.beeId}\` (XP: ${b.xp}, EP: ${b.ep})`).join('\n');
-
-    return message.reply(`🐝 Your Bees:\n${list}`);
+    return message.reply({
+      embeds: [{
+        color: 0xffe419,
+        title: `Bee ID: ${bee.beeId}`,
+        description: `Owner: ${owner.tag}\nXP: ${bee.xp}\nEP: ${bee.ep}`,
+        footer: { text: 'Apis Equinus Bot' },
+        timestamp: new Date(),
+      }]
+    });
   }
+
+  // List all bees for the user
+  const bees = await Bee.find({ ownerId: message.author.id });
+  if (!bees.length) return message.reply('You have no bees.');
+
+  let list = bees.map(b => `• \`${b.beeId}\` (XP: ${b.xp}, EP: ${b.ep})`).join('\n');
+
+  return message.reply(`🐝 Your Bees:\n${list}`);
+}
 });
-
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
