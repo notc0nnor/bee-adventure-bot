@@ -1,3 +1,28 @@
+const epLevels = [
+  { ep: 0, name: 'Getting acquainted' },
+  { ep: 50, name: 'Friendly' },
+  { ep: 125, name: 'Affectionate' },
+  { ep: 225, name: 'Loyal' },
+  { ep: 350, name: 'Loving' },
+  { ep: 500, name: 'Bonded' },
+];
+
+function getEpLevel(ep) {
+  let level = 0;
+  for (let i = 0; i < epLevels.length; i++) {
+    if (ep >= epLevels[i].ep) {
+      level = i;
+    } else {
+      break;
+    }
+  }
+  return {
+    level,
+    name: epLevels[level].name
+  };
+}
+
+
 function getXpLevel(xp) {
   const xpLevels = [
     0,     // Level 0
