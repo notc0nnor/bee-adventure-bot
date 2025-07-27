@@ -22,7 +22,6 @@ function getEpLevel(ep) {
   };
 }
 
-
 function getXpLevel(xp) {
   const xpLevels = [
     0,     // Level 0
@@ -45,4 +44,4 @@ function getXpLevel(xp) {
   return 0; // Default to level 0
 }
 
-module.exports = { getXpLevel };
+module.exports = { getXpLevel, getEpLevel };
