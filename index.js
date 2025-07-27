@@ -47,7 +47,7 @@ client.on('messageCreate', async (message) => {
   const ADMIN_ID = '539820286787452938';
   if (command === '!bee' && args[1] === 'create') {
     if (message.author.id !== ADMIN_ID) {
-      return message.reply('You dont have permission to use this command.');
+      return message.reply('You don’t have permission to use this command.');
     }
 
     const beeId = args[2];
@@ -72,8 +72,26 @@ client.on('messageCreate', async (message) => {
     await newBee.save();
     message.reply(`Created bee \`${beeId}\` for <@${user.id}>`);
   }
+// ---!bee delete command---
+    if (command === '!bee' && args[1] === 'delete') {
+    if (message.author.id !== ADMIN_ID) {
+      return message.reply('You don’t have permission to use this command.');
+    }
 
-  // New: show bee info or list of bees for user
+    const beeId = args[2];
+    if (!beeId) {
+      return message.reply('Usage: `!bee delete [ID]`');
+    }
+
+    const deletedBee = await Bee.findOneAndDelete({ beeId });
+    if (!deletedBee) {
+      return message.reply(`No bee found with ID \`${beeId}\`.`);
+    }
+
+    return message.reply(`Bee \`${beeId}\` has been deleted.`);
+  }
+
+  // ---!bee command ---
   if (command === '!bee') {
     // If an ID is provided, show that bee
     if (args[1]) {
