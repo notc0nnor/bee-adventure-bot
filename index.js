@@ -106,11 +106,9 @@ client.on('messageCreate', async (message) => {
     const owner = await client.users.fetch(bee.ownerId);
 
 const xpLevel = getXpLevel(bee.xp);
-const xpNext = getXpNeeded(xpLevel + 1) - bee.xp;
 
 const epLevel = getEpLevel(bee.ep);
-const epNext = getEpNeeded(epLevel + 1) - bee.ep;
-
+    
 return message.reply({
   embeds: [{
     color: 0xffe419,
@@ -119,10 +117,10 @@ return message.reply({
       `Owner: ${owner.tag}`,
       ``,
       `Level: ${xpLevel}`,
-      `XP: ${bee.xp} (${xpNext} needed for Level ${xpLevel + 1})`,
+      `XP: ${bee.xp}`,
       ``,
       `Level: ${epLevel}`,
-      `EP: ${bee.ep} (${epNext} needed for Level ${epLevel + 1})`
+      `EP: ${bee.ep}`
     ].join('\n'),
     footer: { text: 'Apis Equinus' },
     timestamp: new Date(),
