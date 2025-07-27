@@ -460,6 +460,25 @@ if (command === '!adventure') {
   if (bee.ownerId !== message.author.id) {
     return message.reply('You do not own this bee.');
   }
+  
+// Cooldown check
+if (bee.adventure?.endsAt && bee.adventure.endsAt > new Date()) {
+  const remaining = Math.ceil((bee.adventure.endsAt - new Date()) / (1000 * 60));
+  return message.reply(`This bee is still on an adventure! They will return in **${Math.floor(remaining / 60)}h ${remaining % 60}m**`);
+}
+
+// Optional: Prevent duplicate messages
+if (bee.adventure?.startedAt && !bee.adventure.endsAt) {
+  return message.reply('This bee is already preparing for an adventure.');
+}
+
+// Mark that the user is preparing an adventure
+bee.adventure = {
+  startedAt: new Date(),
+  type: null,
+  endsAt: null,
+};
+await bee.save();
 
   // Create embed
   const embed = new EmbedBuilder()
