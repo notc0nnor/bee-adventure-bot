@@ -465,23 +465,22 @@ if (command === '!adventure') {
   const embed = new EmbedBuilder()
     .setColor(0xffe419)
     .setTitle(`Adventure Time? 🌸 \`${beeId}\``)
-    .setDescription('How long does your Bee want to adventure for?')
-    .setFooter({ text: 'Pick one option below to start the adventure!' });
+    .setDescription('How long does your Bee want to adventure for?');
 
   // Create buttons
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`adventure_1h_${beeId}`)
-      .setLabel('1h Adventure')
+      .setLabel('1h')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId(`adventure_3h_${beeId}`)
-      .setLabel('3h Adventure')
-      .setStyle(ButtonStyle.Secondary),
+      .setLabel('3h')
+      .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId(`adventure_8h_${beeId}`)
-      .setLabel('8h Adventure')
-      .setStyle(ButtonStyle.Success),
+      .setLabel('8h')
+      .setStyle(ButtonStyle.Primary),
   );
 
   // Send the embed with buttons
