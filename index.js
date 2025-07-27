@@ -505,6 +505,140 @@ await bee.save();
   // Send the embed with buttons
   await message.reply({ embeds: [embed], components: [row] });
 }
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const customId = interaction.customId;
+
+  // Match buttons like "adventure_1h_Bee001"
+  const match = customId.match(/^adventure_(1h|3h|8h)_(.+)$/);
+  if (!match) return;
+
+  const [, durationKey, beeId] = match;
+  const bee = await Bee.findOne({ beeId });
+  if (!bee) return interaction.reply({ content: 'Bee not found.', ephemeral: true });
+
+  // Make sure only the owner can use the button
+  if (bee.ownerId !== interaction.user.id) {
+    return interaction.reply({ content: 'You do not own this bee.', ephemeral: true });
+  }
+
+  // If already on an adventure
+  if (bee.adventure?.endsAt && bee.adventure.endsAt > new Date()) {
+    return interaction.reply({ content: 'This bee is already on an adventure.', ephemeral: true });
+  }
+
+  // Define adventure options
+  const durations = {
+    '1h': { ms: 1 * 60 * 1000, xp: 5, coins: [7, 15], flowerChance: 0.02, cooldown: 1 * 60 * 1000 }, // change back time 
+    '3h': { ms: 3 * 60 * 60 * 1000, xp: 12, coins: [12, 30], flowerChance: 0.05, cooldown: 24 * 60 * 60 * 1000 },
+    '8h': { ms: 8 * 60 * 60 * 1000, xp: 35, coins: [23, 50], flowerChance: 0.07, cooldown: 48 * 60 * 60 * 1000 },
+  };
+
+  const selected = durations[durationKey];
+  const endTime = new Date(Date.now() + selected.cooldown);
+
+  // Save adventure start and end
+  bee.adventure = {
+    startedAt: new Date(),
+    endsAt: endTime,
+    type: durationKey,
+  };
+  await bee.save();
+
+  // Remove buttons from message
+  await interaction.update({
+    embeds: [interaction.message.embeds[0].setDescription(`Bee \`${beeId}\` started a ${durationKey} adventure! 🐝`)],
+    components: [],
+  });
+
+  // Wait for adventure to complete (in production use a job/timer system or DB scheduler)
+  setTimeout(async () => {
+    try {
+      const updatedBee = await Bee.findOne({ beeId });
+      if (!updatedBee) return;
+
+      // Reward logic
+      const xpGained = selected.xp;
+      const coinsGained = Math.floor(Math.random() * (selected.coins[1] - selected.coins[0] + 1)) + selected.coins[0];
+      const foundFlower = Math.random() < selected.flowerChance;
+
+      updatedBee.xp += xpGained;
+      updatedBee.adventure = null; // Clear adventure
+      await updatedBee.save();
+
+      // Update inventory
+      const inv = await Inventory.findOneAndUpdate(
+        { userId: updatedBee.ownerId },
+        { $inc: { coins: coinsGained, flowers: foundFlower ? 1 : 0 } },
+        { upsert: true, new: true }
+      );
+
+      // Random result message
+      const messages = [
+        'Your bee returned from a sunny meadow.',
+        'The bee found a cozy forest glade.',
+        'An old flower patch was rediscovered!',
+        'The journey was peaceful and scenic.',
+        'A light rain didn’t stop your bee.',
+        'A curious squirrel waved hello.',
+        'Your bee made some buzzing friends!',
+        'A lucky gust carried them far!',
+        'They returned with pollen in their fur!',
+      ];
+      const result = messages[Math.floor(Math.random() * messages.length)];
+
+      // Notify user in adventure channel
+      const user = await client.users.fetch(updatedBee.ownerId);
+      const adventureChannel = await client.channels.fetch(ADVENTURE_CHANNEL_ID);
+      await adventureChannel.send({
+        content: `<@${updatedBee.ownerId}>`,
+        embeds: [{
+          color: 0xffe419,
+          title: `🐝 Bee \`${beeId}\` has returned!`,
+          description: `${result}\n\nXP gained: ${xpGained}\nCoins: ${coinsGained} 🪙\n${foundFlower ? '🌸 A flower was found!' : 'No flowers were found.'}`,
+          footer: { text: 'Apis Equinus Bot' },
+          timestamp: new Date(),
+        }]
+      });
+
+      // Log XP gain
+      const trackChannel = await client.channels.fetch('1394792906849652977');
+      await trackChannel.send({
+        embeds: [{
+          color: 0xffe419,
+          title: `Bee Stat Change`,
+          description: `Added: ${xpGained} XP\nTo: \`${beeId}\`\nBy: Adventuring\nPrevious: ${updatedBee.xp - xpGained} → Now: ${updatedBee.xp}`,
+          timestamp: new Date(),
+        }]
+      });
+
+      // Log inventory gain
+      const logChannel = await client.channels.fetch('1394414785130532976');
+      await logChannel.send({
+        embeds: [{
+          color: 0xffe419,
+          title: `Inventory Change`,
+          description: `Added: ${coinsGained} 🪙\nTo: <@${updatedBee.ownerId}>\nBy: Adventuring\nPrevious: ${inv.coins - coinsGained} → Now: ${inv.coins}`,
+          timestamp: new Date(),
+        }]
+      });
+
+      if (foundFlower) {
+        await logChannel.send({
+          embeds: [{
+            color: 0xffe419,
+            title: `Inventory Change`,
+            description: `Added: 🌸 1 flower\nTo: <@${updatedBee.ownerId}>\nBy: Adventuring\nPrevious: ${inv.flowers - 1} → Now: ${inv.flowers}`,
+            timestamp: new Date(),
+          }]
+        });
+      }
+    } catch (err) {
+      console.error('Adventure timer error:', err);
+    }
+  }, selected.ms); // Wait duration
+});
 
 
 });
