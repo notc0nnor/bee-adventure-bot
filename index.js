@@ -480,8 +480,8 @@ await recipientInv.save();
   });
 }
   //---!give flowers---
-  const senderPrev = senderInv.flowers;
-const recipientPrev = recipientInv.flowers;
+  const senderPrevFl = senderInv.flowers;
+const recipientPrevFl = recipientInv.flowers;
 
 senderInv.flowers -= amount;
 recipientInv.flowers += amount;
@@ -531,8 +531,8 @@ if (command === '!give' && args[1] === 'flowers') {
         ``,
         `**Flowers Transferred:** ${amount} 🌸`,
       ``,
-      `<@${message.author.id}>: ${senderPrev} → ${senderInv.flowers}`,
-      `<@${recipient.id}>: ${recipientPrev} → ${recipientInv.flowers}`
+      `<@${message.author.id}>: ${senderPrevFl} → ${senderInv.flowers}`,
+      `<@${recipient.id}>: ${recipientPrevFl} → ${recipientInv.flowers}`
       ].join('\n'),
       timestamp: new Date(),
     }],
