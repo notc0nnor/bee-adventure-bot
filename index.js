@@ -539,6 +539,17 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.reply({ content: 'This bee is already on an adventure.', ephemeral: true });
   }
 
+if (bee.adventureCooldown && bee.adventureCooldown > new Date()) {
+  const remainingMs = bee.adventureCooldown - new Date();
+  const minutes = Math.floor((remainingMs / 1000 / 60) % 60);
+  const hours = Math.floor((remainingMs / 1000 / 60 / 60));
+
+  return interaction.reply({
+    content: `This bee is still resting from a previous adventure!\nPlease wait **${hours}h ${minutes}m**.`,
+  });
+}
+
+  
   // Define adventure options
   const durations = {
     '1h': { ms: 1 * 60 * 1000, xp: 5, coins: [7, 15], flowerChance: 0.02, cooldown: 1 * 60 * 1000 }, // change back time 
