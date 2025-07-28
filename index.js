@@ -683,3 +683,78 @@ if (newLevel > previousLevel) {
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
 client.login(TOKEN);
+
+//Check for adventures
+setInterval(async () => {
+  try {
+    const expiredBees = await Bee.find({
+      'adventure.endsAt': { $lte: new Date() },
+    });
+
+    for (const bee of expiredBees) {
+      // Prevent reprocessing
+      if (!bee.adventure || bee.adventure.processed) continue;
+
+      const { type } = bee.adventure;
+      const durationMap = {
+        '1h': { xp: 5, coins: [7, 15], flowerChance: 0.02, cooldown: 1 * 60 * 1000 },
+        '3h': { xp: 12, coins: [12, 30], flowerChance: 0.05, cooldown: 24 * 60 * 60 * 1000 },
+        '8h': { xp: 35, coins: [23, 50], flowerChance: 0.07, cooldown: 48 * 60 * 60 * 1000 },
+      };
+
+      const selected = durationMap[type];
+      const xpGained = selected.xp;
+      const coinsGained = Math.floor(Math.random() * (selected.coins[1] - selected.coins[0] + 1)) + selected.coins[0];
+      const foundFlower = Math.random() < selected.flowerChance;
+
+      const oldXp = bee.xp;
+      const previousLevel = getXpLevel(oldXp);
+      bee.xp += xpGained;
+      const newLevel = getXpLevel(bee.xp);
+
+      const cooldownUntil = new Date(Date.now() + selected.cooldown);
+      bee.adventureCooldown = cooldownUntil;
+
+      bee.adventure = null; // Clear adventure
+      await bee.save();
+
+      const inv = await Inventory.findOneAndUpdate(
+        { userId: bee.ownerId },
+        { $inc: { coins: coinsGained, flowers: foundFlower ? 1 : 0 } },
+        { upsert: true, new: true }
+      );
+
+      const user = await client.users.fetch(bee.ownerId);
+      const adventureChannel = await client.channels.fetch(ADVENTURE_CHANNEL_ID);
+
+      await adventureChannel.send({
+        content: `<@${bee.ownerId}>`,
+        embeds: [{
+          color: 0xffe419,
+          title: `🐝 Bee \`${bee.beeId}\` has returned!`,
+          description: `XP: ${xpGained}, Coins: ${coinsGained} 🪙${foundFlower ? '\n🌸 A flower was found!' : ''}`,
+          timestamp: new Date(),
+        }]
+      });
+
+      // Level-up message
+      if (newLevel > previousLevel) {
+        await adventureChannel.send({
+          content: `<@${bee.ownerId}>`,
+          embeds: [{
+            color: 0xffe419,
+            title: `Level Up! 🆙`,
+            description: `Bee \`${bee.beeId}\` leveled up!\nLevel ${previousLevel} → Level ${newLevel}`,
+            timestamp: new Date(),
+          }]
+        });
+      }
+
+      // You can also log to logChannel and trackChannel if desired.
+    }
+
+  } catch (err) {
+    console.error('Error in adventure polling:', err);
+  }
+}, 60 * 1000); // every 60 seconds
+
