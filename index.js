@@ -547,8 +547,7 @@ client.on('interactionCreate', async (interaction) => {
   await bee.save();
 
   // Remove buttons from message
-  await interaction.update({
-    const embed = EmbedBuilder.from(interaction.message.embeds[0]);
+const embed = EmbedBuilder.from(interaction.message.embeds[0]);
 embed.setDescription(`Bee \`${beeId}\` started a ${durationKey} adventure! 🐝`);
 
 await interaction.update({
