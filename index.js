@@ -563,8 +563,28 @@ client.on('interactionCreate', async (interaction) => {
       const coinsGained = Math.floor(Math.random() * (selected.coins[1] - selected.coins[0] + 1)) + selected.coins[0];
       const foundFlower = Math.random() < selected.flowerChance;
 
-      updatedBee.xp += xpGained;
-      updatedBee.adventure = null; // Clear adventure
+     const oldXp = updatedBee.xp;
+const previousLevel = getXpLevel(oldXp);
+
+updatedBee.xp += xpGained;
+
+const newLevel = getXpLevel(updatedBee.xp);
+await updatedBee.save();
+
+// Level-up message
+if (newLevel > previousLevel) {
+  const user = await client.users.fetch(updatedBee.ownerId);
+  await adventureChannel.send({
+    content: `<@${updatedBee.ownerId}>`,
+    embeds: [{
+      color: 0xffe419,
+      title: `Bee \`${beeId}\` leveled up!`,
+      description: `Your bee \`${bee.beeId}\` leveled up in **XP**!\nLevel ${previousLevel} → Level ${newLevel}`,
+      timestamp: new Date(),
+    }]
+  });
+}
+
       await updatedBee.save();
 
       // Update inventory
