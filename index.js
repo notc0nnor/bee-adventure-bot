@@ -669,10 +669,11 @@ if (newLevel > previousLevel) {
           }]
         });
       }
+    updatedBee.adventureCooldown = new Date(Date.now() + selected.cooldown);
     } catch (err) {
       console.error('Adventure timer error:', err);
     }
-    updatedBee.adventureCooldown = new Date(Date.now() + selected.cooldown);
+    
 await updatedBee.save();
 
   }, selected.ms); // Wait duration
