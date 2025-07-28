@@ -548,9 +548,14 @@ client.on('interactionCreate', async (interaction) => {
 
   // Remove buttons from message
   await interaction.update({
-    embeds: [interaction.message.embeds[0].setDescription(`Bee \`${beeId}\` started a ${durationKey} adventure! 🐝`)],
-    components: [],
-  });
+    const embed = EmbedBuilder.from(interaction.message.embeds[0]);
+embed.setDescription(`Bee \`${beeId}\` started a ${durationKey} adventure! 🐝`);
+
+await interaction.update({
+  embeds: [embed],
+  components: [],
+});
+
 
   // Wait for adventure to complete (in production use a job/timer system or DB scheduler)
   setTimeout(async () => {
