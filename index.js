@@ -612,6 +612,7 @@ if (newLevel > previousLevel) {
 }
 
       await updatedBee.save();
+console.log('Setting cooldown for', beeId, 'until', new Date(Date.now() + selected.cooldown));
 
       // Update inventory
       const inv = await Inventory.findOneAndUpdate(
