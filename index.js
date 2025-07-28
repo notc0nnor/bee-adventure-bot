@@ -466,6 +466,17 @@ if (bee.adventure?.endsAt && bee.adventure.endsAt > new Date()) {
   const remaining = Math.ceil((bee.adventure.endsAt - new Date()) / (1000 * 60));
   return message.reply(`This bee is still on an adventure! They will return in **${Math.floor(remaining / 60)}h ${remaining % 60}m**`);
 }
+  // Cooldown check
+if (bee.adventureCooldown && bee.adventureCooldown > new Date()) {
+  const remainingMs = bee.adventureCooldown - new Date();
+  const minutes = Math.floor((remainingMs / 1000 / 60) % 60);
+  const hours = Math.floor((remainingMs / 1000 / 60 / 60));
+
+  return message.reply(
+    `This bee is resting! They will be ready in in **${hours}h ${minutes}m**.`
+  );
+}
+
 
 // Optional: Prevent duplicate messages
 if (bee.adventure?.startedAt && !bee.adventure.endsAt) {
@@ -661,9 +672,11 @@ if (newLevel > previousLevel) {
     } catch (err) {
       console.error('Adventure timer error:', err);
     }
+    updatedBee.adventureCooldown = new Date(Date.now() + selected.cooldown);
+await updatedBee.save();
+
   }, selected.ms); // Wait duration
 });
-
 
 });
 
