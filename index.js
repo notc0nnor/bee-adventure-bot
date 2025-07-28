@@ -460,36 +460,30 @@ if (command === '!adventure') {
   if (bee.ownerId !== message.author.id) {
     return message.reply('You do not own this bee.');
   }
-  
-// Cooldown check
-if (bee.adventure?.endsAt && bee.adventure.endsAt > new Date()) {
-  const remaining = Math.ceil((bee.adventure.endsAt - new Date()) / (1000 * 60));
-  return message.reply(`This bee is still on an adventure! They will return in **${Math.floor(remaining / 60)}h ${remaining % 60}m**`);
-}
+
   // Cooldown check
-if (bee.adventureCooldown && bee.adventureCooldown > new Date()) {
-  const remainingMs = bee.adventureCooldown - new Date();
-  const minutes = Math.floor((remainingMs / 1000 / 60) % 60);
-  const hours = Math.floor((remainingMs / 1000 / 60 / 60));
+  if (bee.adventureCooldown && bee.adventureCooldown > new Date()) {
+    const remainingMs = bee.adventureCooldown - new Date();
+    const minutes = Math.floor((remainingMs / 1000 / 60) % 60);
+    const hours = Math.floor((remainingMs / 1000 / 60 / 60));
 
-  return message.reply(
-    `This bee is resting! They will be ready in in **${hours}h ${minutes}m**.`
-  );
-}
+    return message.reply(
+      `This bee is resting! They will be ready in **${hours}h ${minutes}m**.`
+    );
+  }
 
+  // Optional: Prevent duplicate messages
+  if (bee.adventure?.startedAt && !bee.adventure.endsAt) {
+    return message.reply('This bee is already preparing for an adventure.');
+  }
 
-// Optional: Prevent duplicate messages
-if (bee.adventure?.startedAt && !bee.adventure.endsAt) {
-  return message.reply('This bee is already preparing for an adventure.');
-}
-
-// Mark that the user is preparing an adventure
-bee.adventure = {
-  startedAt: new Date(),
-  type: null,
-  endsAt: null,
-};
-await bee.save();
+  // Mark that the user is preparing an adventure
+  bee.adventure = {
+    startedAt: new Date(),
+    type: null,
+    endsAt: null,
+  };
+  await bee.save();
 
   // Create embed
   const embed = new EmbedBuilder()
@@ -516,51 +510,30 @@ await bee.save();
   // Send the embed with buttons
   await message.reply({ embeds: [embed], components: [row] });
 }
+
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
 
   const customId = interaction.customId;
-
-  // Match buttons like "adventure_1h_Bee001"
   const match = customId.match(/^adventure_(1h|3h|8h)_(.+)$/);
   if (!match) return;
 
   const [, durationKey, beeId] = match;
   const bee = await Bee.findOne({ beeId });
   if (!bee) return interaction.reply({ content: 'Bee not found.', ephemeral: true });
-
-  // Make sure only the owner can use the button
   if (bee.ownerId !== interaction.user.id) {
     return interaction.reply({ content: 'You do not own this bee.', ephemeral: true });
   }
 
-  // If already on an adventure
-  if (bee.adventure?.endsAt && bee.adventure.endsAt > new Date()) {
-    return interaction.reply({ content: 'This bee is already on an adventure.', ephemeral: true });
-  }
-
-if (bee.adventureCooldown && bee.adventureCooldown > new Date()) {
-  const remainingMs = bee.adventureCooldown - new Date();
-  const minutes = Math.floor((remainingMs / 1000 / 60) % 60);
-  const hours = Math.floor((remainingMs / 1000 / 60 / 60));
-
-  return interaction.reply({
-    content: `This bee is still resting from a previous adventure!\nPlease wait **${hours}h ${minutes}m**.`,
-  });
-}
-
-  
-  // Define adventure options
   const durations = {
-    '1h': { ms: 1 * 60 * 1000, xp: 5, coins: [7, 15], flowerChance: 0.02, cooldown: 1 * 60 * 1000 }, // change back time 
+    '1h': { ms: 1 * 60 * 1000, xp: 5, coins: [7, 15], flowerChance: 0.02, cooldown: 1 * 60 * 1000 },
     '3h': { ms: 3 * 60 * 60 * 1000, xp: 12, coins: [12, 30], flowerChance: 0.05, cooldown: 24 * 60 * 60 * 1000 },
     '8h': { ms: 8 * 60 * 60 * 1000, xp: 35, coins: [23, 50], flowerChance: 0.07, cooldown: 48 * 60 * 60 * 1000 },
   };
 
   const selected = durations[durationKey];
-  const endTime = new Date(Date.now() + selected.cooldown);
+  const endTime = new Date(Date.now() + selected.ms);
 
-  // Save adventure start and end
   bee.adventure = {
     startedAt: new Date(),
     endsAt: endTime,
@@ -568,60 +541,49 @@ if (bee.adventureCooldown && bee.adventureCooldown > new Date()) {
   };
   await bee.save();
 
-  // Remove buttons from message
-const embed = EmbedBuilder.from(interaction.message.embeds[0]);
-embed.setDescription(`Bee \`${beeId}\` started a ${durationKey} adventure! 🐝`);
+  const embed = EmbedBuilder.from(interaction.message.embeds[0]);
+  embed.setDescription(`Bee \`${beeId}\` started a ${durationKey} adventure! 🐝`);
 
-await interaction.update({
-  embeds: [embed],
-  components: [],
-});
+  await interaction.update({
+    embeds: [embed],
+    components: [],
+  });
 
-
-  // Wait for adventure to complete (in production use a job/timer system or DB scheduler)
   setTimeout(async () => {
     try {
       const updatedBee = await Bee.findOne({ beeId });
       if (!updatedBee) return;
 
-      // Reward logic
       const xpGained = selected.xp;
       const coinsGained = Math.floor(Math.random() * (selected.coins[1] - selected.coins[0] + 1)) + selected.coins[0];
       const foundFlower = Math.random() < selected.flowerChance;
 
-     const oldXp = updatedBee.xp;
-const previousLevel = getXpLevel(oldXp);
+      const oldXp = updatedBee.xp;
+      const previousLevel = getXpLevel(oldXp);
+      updatedBee.xp += xpGained;
+      const newLevel = getXpLevel(updatedBee.xp);
 
-updatedBee.xp += xpGained;
+      if (newLevel > previousLevel) {
+        const user = await client.users.fetch(updatedBee.ownerId);
+        const adventureChannel = await client.channels.fetch(ADVENTURE_CHANNEL_ID);
+        await adventureChannel.send({
+          content: `<@${updatedBee.ownerId}>`,
+          embeds: [{
+            color: 0xffe419,
+            title: `Bee \`${beeId}\` leveled up!`,
+            description: `Your bee \`${updatedBee.beeId}\` leveled up!
+Level ${previousLevel} → Level ${newLevel}`,
+            timestamp: new Date(),
+          }]
+        });
+      }
 
-const newLevel = getXpLevel(updatedBee.xp);
-await updatedBee.save();
-
-// Level-up message
-if (newLevel > previousLevel) {
-  const user = await client.users.fetch(updatedBee.ownerId);
-  await adventureChannel.send({
-    content: `<@${updatedBee.ownerId}>`,
-    embeds: [{
-      color: 0xffe419,
-      title: `Bee \`${beeId}\` leveled up!`,
-      description: `Your bee \`${bee.beeId}\` leveled up in **XP**!\nLevel ${previousLevel} → Level ${newLevel}`,
-      timestamp: new Date(),
-    }]
-  });
-}
-
-      await updatedBee.save();
-console.log('Setting cooldown for', beeId, 'until', new Date(Date.now() + selected.cooldown));
-
-      // Update inventory
       const inv = await Inventory.findOneAndUpdate(
         { userId: updatedBee.ownerId },
         { $inc: { coins: coinsGained, flowers: foundFlower ? 1 : 0 } },
         { upsert: true, new: true }
       );
 
-      // Random result message
       const messages = [
         'Your bee returned from a sunny meadow.',
         'The bee found a cozy forest glade.',
@@ -635,38 +597,43 @@ console.log('Setting cooldown for', beeId, 'until', new Date(Date.now() + select
       ];
       const result = messages[Math.floor(Math.random() * messages.length)];
 
-      // Notify user in adventure channel
-      const user = await client.users.fetch(updatedBee.ownerId);
       const adventureChannel = await client.channels.fetch(ADVENTURE_CHANNEL_ID);
       await adventureChannel.send({
         content: `<@${updatedBee.ownerId}>`,
         embeds: [{
           color: 0xffe419,
-          title: `🐝 Bee \`${beeId}\` has returned!`,
-          description: `${result}\n\nXP gained: ${xpGained}\nCoins: ${coinsGained} 🪙\n${foundFlower ? '🌸 A flower was found!' : 'No flowers were found.'}`,
-          footer: { text: 'Apis Equinus Bot' },
+          title: `🐝 \`${beeId}\` has returned!`,
+          description: `${result}
+
+XP gained: ${xpGained}
+Coins: ${coinsGained} 🪙
+${foundFlower ? 'Flower: 1 🌸 ' : 'Flower: No flowers were found'}`,
           timestamp: new Date(),
         }]
       });
 
-      // Log XP gain
       const trackChannel = await client.channels.fetch('1394792906849652977');
       await trackChannel.send({
         embeds: [{
-          color: 0xffe419,
+          color: 0xc6ff85,
           title: `Bee Stat Change`,
-          description: `Added: ${xpGained} XP\nTo: \`${beeId}\`\nBy: Adventuring\nPrevious: ${updatedBee.xp - xpGained} → Now: ${updatedBee.xp}`,
+          description: `Added: ${xpGained} XP
+To: \`${beeId}\`
+By: Adventuring
+Previous: ${updatedBee.xp - xpGained} → Now: ${updatedBee.xp}`,
           timestamp: new Date(),
         }]
       });
 
-      // Log inventory gain
       const logChannel = await client.channels.fetch('1394414785130532976');
       await logChannel.send({
         embeds: [{
           color: 0xffe419,
           title: `Inventory Change`,
-          description: `Added: ${coinsGained} 🪙\nTo: <@${updatedBee.ownerId}>\nBy: Adventuring\nPrevious: ${inv.coins - coinsGained} → Now: ${inv.coins}`,
+          description: `Added: ${coinsGained} 🪙
+To: <@${updatedBee.ownerId}>
+By: Adventuring
+Previous: ${inv.coins - coinsGained} → Now: ${inv.coins}`,
           timestamp: new Date(),
         }]
       });
@@ -674,20 +641,24 @@ console.log('Setting cooldown for', beeId, 'until', new Date(Date.now() + select
       if (foundFlower) {
         await logChannel.send({
           embeds: [{
-            color: 0xffe419,
+            color: 0xf77cbc,
             title: `Inventory Change`,
-            description: `Added: 🌸 1 flower\nTo: <@${updatedBee.ownerId}>\nBy: Adventuring\nPrevious: ${inv.flowers - 1} → Now: ${inv.flowers}`,
+            description: `Added: 1 🌸 
+To: <@${updatedBee.ownerId}>
+By: Adventuring
+Previous: ${inv.flowers - 1} → Now: ${inv.flowers}`,
             timestamp: new Date(),
           }]
         });
       }
-    updatedBee.adventureCooldown = new Date(Date.now() + selected.cooldown);
+
+      updatedBee.adventureCooldown = new Date(Date.now() + selected.cooldown);
+      updatedBee.adventure = null;
       await updatedBee.save();
     } catch (err) {
       console.error('Adventure timer error:', err);
     }
-
-  }, selected.ms); // Wait duration
+  }, selected.ms);
 });
 
 });
@@ -695,78 +666,4 @@ console.log('Setting cooldown for', beeId, 'until', new Date(Date.now() + select
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
 client.login(TOKEN);
-
-//Check for adventures
-setInterval(async () => {
-  try {
-    const expiredBees = await Bee.find({
-      'adventure.endsAt': { $lte: new Date() },
-    });
-
-    for (const bee of expiredBees) {
-      // Prevent reprocessing
-      if (!bee.adventure || bee.adventure.processed) continue;
-
-      const { type } = bee.adventure;
-      const durationMap = {
-        '1h': { xp: 5, coins: [7, 15], flowerChance: 0.02, cooldown: 1 * 60 * 1000 },
-        '3h': { xp: 12, coins: [12, 30], flowerChance: 0.05, cooldown: 24 * 60 * 60 * 1000 },
-        '8h': { xp: 35, coins: [23, 50], flowerChance: 0.07, cooldown: 48 * 60 * 60 * 1000 },
-      };
-
-      const selected = durationMap[type];
-      const xpGained = selected.xp;
-      const coinsGained = Math.floor(Math.random() * (selected.coins[1] - selected.coins[0] + 1)) + selected.coins[0];
-      const foundFlower = Math.random() < selected.flowerChance;
-
-      const oldXp = bee.xp;
-      const previousLevel = getXpLevel(oldXp);
-      bee.xp += xpGained;
-      const newLevel = getXpLevel(bee.xp);
-
-      const cooldownUntil = new Date(Date.now() + selected.cooldown);
-      bee.adventureCooldown = cooldownUntil;
-
-      bee.adventure = null; // Clear adventure
-      await bee.save();
-
-      const inv = await Inventory.findOneAndUpdate(
-        { userId: bee.ownerId },
-        { $inc: { coins: coinsGained, flowers: foundFlower ? 1 : 0 } },
-        { upsert: true, new: true }
-      );
-
-      const user = await client.users.fetch(bee.ownerId);
-      const adventureChannel = await client.channels.fetch(ADVENTURE_CHANNEL_ID);
-
-      await adventureChannel.send({
-        content: `<@${bee.ownerId}>`,
-        embeds: [{
-          color: 0xffe419,
-          title: `🐝 Bee \`${bee.beeId}\` has returned!`,
-          description: `XP: ${xpGained}, Coins: ${coinsGained} 🪙${foundFlower ? '\n🌸 A flower was found!' : ''}`,
-          timestamp: new Date(),
-        }]
-      });
-
-      // Level-up message
-      if (newLevel > previousLevel) {
-        await adventureChannel.send({
-          content: `<@${bee.ownerId}>`,
-          embeds: [{
-            color: 0xffe419,
-            title: `Level Up! 🆙`,
-            description: `Bee \`${bee.beeId}\` leveled up!\nLevel ${previousLevel} → Level ${newLevel}`,
-            timestamp: new Date(),
-          }]
-        });
-      }
-
-      // You can also log to logChannel and trackChannel if desired.
-    }
-
-  } catch (err) {
-    console.error('Error in adventure polling:', err);
-  }
-}, 60 * 1000); // every 60 seconds
 
