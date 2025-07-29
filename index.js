@@ -460,6 +460,12 @@ if (command === '!adventure') {
   if (bee.ownerId !== message.author.id) {
     return message.reply('You do not own this bee.');
   }
+  
+// Cleanup expired cooldowns
+if (bee.adventureCooldown && new Date() >= bee.adventureCooldown) {
+  bee.adventureCooldown = null;
+  await bee.save();
+}
 
   // Cooldown check
   if (bee.adventureCooldown && bee.adventureCooldown > new Date()) {
