@@ -612,6 +612,7 @@ try {
 
   // Schedule result
   setTimeout(async () => {
+    const Inventory = require('./models/Inventory');
     const user = await client.users.fetch(bee.ownerId);
     let inventory = await Inventory.findOne({ userId: user.id });
     if (!inventory) {
