@@ -731,23 +731,24 @@ await bee.save();
   await interaction.editReply({
   content: `🐝 Bee \`${bee.beeId}\` is now on an adventure! They will return in ${hours}.`
 });
-  
 try {
   const originalMsg = await interaction.message.fetch();
   await originalMsg.edit({ components: [] });
 } catch (err) {
   console.warn('Could not remove buttons:', err);
 }
-  let ms = bee.adventureEndTime - Date.now();
-  if (ms <= 0) {
+
+const remainingTime = bee.adventureEndTime - Date.now();
+
+if (remainingTime <= 0) {
   const user = await client.users.fetch(bee.ownerId);
   await finishAdventure(bee, user);
 } else {
-setTimeout(async () => {
-  const user = await client.users.fetch(bee.ownerId);
-  await finishAdventure(bee, user);
-}, ms); // this should be 1h, 3h, or 8h in ms
-  }
+  setTimeout(async () => {
+    const user = await client.users.fetch(bee.ownerId);
+    await finishAdventure(bee, user);
+  }, remainingTime); // this will now be 1h, 3h, or 8h in ms
+}
   
 const adventureEnd = new Date(now.getTime() + config.duration * 60 * 1000); // change back time 60 60 1000
 const cooldownEnd = new Date(now.getTime() + config.cooldown * 5 * 1000); //change back time 60 60 1000
