@@ -70,7 +70,7 @@ const Bee = require('./models/Bee');
 //--- adventure restart check---
 async function finishAdventure(bee, user) {
   const Inventory = require('./models/Inventory');
-  const adventureDuration = bee.adventureEndTime - (now - 1000); // buffer
+  const adventureDuration = bee.adventureEndTime - (Date.now() - 1000); // buffer
 
   let reward;
   if (adventureDuration <= 3600000) {
@@ -680,6 +680,7 @@ client.on('interactionCreate', async (interaction) => {
   }
 
   // Set timers
+  const now = new Date();
   const ms = parseInt(hours) * 60 * 1000; //change time back
   bee.onAdventureUntil = new Date(now.getTime() + ms);
   bee.cooldownUntil = new Date(now.getTime() + ms + config.cooldownHours * 5 * 1000); //change back time
