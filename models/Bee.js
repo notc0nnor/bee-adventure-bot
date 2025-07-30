@@ -7,6 +7,9 @@ const beeSchema = new mongoose.Schema({
   ep: { type: Number, default: 0 },
   onAdventureUntil: { type: Date, default: null },
   cooldownUntil: { type: Date, default: null },
+  status: { type: String, default: 'idle' }, // 'idle', 'adventuring', 'cooldown'
+  adventureEndTime: { type: Date, default: null },
+  cooldownEndTime: { type: Date, default: null },
     });
 
 module.exports = mongoose.model('Bee', beeSchema);
