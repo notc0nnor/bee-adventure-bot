@@ -445,7 +445,7 @@ if (command === '!remove' && args[1] === 'coins') {
   });
 }
 //---!work command---
-  if (subcommand === 'work') {
+  if (command === 'work') { 
   if (message.channel.id !== '1390013455305801748') {
     return message.reply('Please visit <#1390013455305801748> to work.');
   }
@@ -466,9 +466,9 @@ if (command === '!remove' && args[1] === 'coins') {
   const description = descriptions[Math.floor(Math.random() * descriptions.length)];
 
   // Load or create inventory
-  let inventory = await Inventory.findOne({ userId });
+ let inventory = await Inventory.findOne({ userId: message.author.id });
   if (!inventory) {
-    inventory = new Inventory({ userId, coins: 0 });
+    return message.reply('You do not have an inventory yet.');
   }
 
   const previousCoins = inventory.coins;
