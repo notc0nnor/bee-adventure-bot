@@ -33,8 +33,6 @@ client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
-const { EmbedBuilder } = require('discord.js');
-const Bee = require('./models/Bee'); 
 
 client.once('ready', async () => {
 
@@ -72,7 +70,6 @@ const Bee = require('./models/Bee');
 //--- adventure restart check---
 async function finishAdventure(bee, user) {
   const Inventory = require('./models/Inventory');
-  const now = Date.now();
   const adventureDuration = bee.adventureEndTime - (now - 1000); // buffer
 
   let reward;
