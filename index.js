@@ -595,7 +595,6 @@ client.on('interactionCreate', async (interaction) => {
   const ms = parseInt(hours) * 60 * 1000; //change time back
   bee.onAdventureUntil = new Date(now.getTime() + ms);
   bee.cooldownUntil = new Date(now.getTime() + ms + config.cooldownHours * 5 * 1000); //change back time
-  bee.xp += config.xp;
   await bee.save();
 
   await interaction.editReply({
@@ -625,6 +624,24 @@ try {
     inventory.coins += coinReward;
     if (flowerFound) inventory.flowers += 1;
     await inventory.save();
+    bee.xp += config.xp;
+    const prevLevel = getXpLevel(bee.xp - config.xp);
+const newLevel = getXpLevel(bee.xp);
+
+if (newLevel > prevLevel) {
+  const levelUpChannel = await client.channels.fetch('1394792906849652977');
+  await levelUpChannel.send({
+    content: `<@${bee.ownerId}>`,
+    embeds: [
+      new EmbedBuilder()
+        .setColor(0xffe419)
+        .setTitle(`Bee ${bee.beeId} has leveled up!`)
+        .setDescription(`Your bee \`${bee.beeId}\` leveled up in **XP**!\nLevel ${prevLevel} → Level ${newLevel}`)
+        .setTimestamp()
+    ]
+  });
+}
+    await bee.save();
 
     bee.onAdventureUntil = null;
     await bee.save();
@@ -643,11 +660,12 @@ try {
       .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
       .setTitle([ `Bee ${bee.beeId} returns!` ])
       .setDescription([
-        `${randomMsg}`,
-        ``,
-        `Collected: **${coinReward} 🪙**`,
-        flowerFound ? `Also found: **1 🌸**` : `No flowers found this time.`,
-      ].join('\n'))
+      `${randomMsg}`,
+      ``,
+      `Earned: **${config.xp} XP**`,
+      `Collected: **${coinReward} 🪙**`,
+      flowerFound ? `Also found: **1 🌸**` : `No flowers found this time.`,
+     ].join('\n'))
       .setFooter({ text: `Adventure complete for bee ${bee.beeId}` })
       .setTimestamp();
 
