@@ -73,7 +73,6 @@ const Bee = require('./models/Bee');
 //--- adventure restart check---
 async function finishAdventure(bee, user) {
   const Inventory = require('./models/Inventory');
-  const { getXpLevel } = require('./levelUtils');
   const now = Date.now();
   const adventureDuration = bee.adventureEndTime - (now - 1000); // buffer
 
