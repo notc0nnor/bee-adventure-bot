@@ -33,7 +33,6 @@ client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
-const { getXpLevel } = require('./levelUtils');
 const { EmbedBuilder } = require('discord.js');
 const Bee = require('./models/Bee'); 
 
