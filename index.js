@@ -681,7 +681,6 @@ client.on('interactionCreate', async (interaction) => {
   
 
   // Set timers
-const now = new Date();
 
 // Normalize and parse input like "1h30m", "2h", "45m", "2h 15m"
 const timeString = hours.toLowerCase().replace(/\s+/g, ''); // remove spaces
