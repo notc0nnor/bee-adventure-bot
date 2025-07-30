@@ -594,13 +594,20 @@ client.on('interactionCreate', async (interaction) => {
   // Set timers
   const ms = parseInt(hours) * 60 * 1000; //change time back
   bee.onAdventureUntil = new Date(now.getTime() + ms);
-  bee.cooldownUntil = new Date(now.getTime() + ms + config.cooldownHours * 60 * 60 * 1000);
+  bee.cooldownUntil = new Date(now.getTime() + ms + config.cooldownHours * 5 * 1000); //change back time
   bee.xp += config.xp;
   await bee.save();
 
   await interaction.editReply({
-  content: `🐝 Bee \`${bee.beeId}\` has begun a ${hours} adventure!`
+  content: `🐝 Bee \`${bee.beeId}\` is now on an adventure! They will return in ${hours}.`
 });
+  
+try {
+  const originalMsg = await interaction.message.fetch();
+  await originalMsg.edit({ components: [] });
+} catch (err) {
+  console.warn('Could not remove buttons:', err);
+}
 
 
   // Schedule result
