@@ -33,26 +33,6 @@ client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
-
-client.once('ready', async () => {
-
-  const now = Date.now();
-  const bees = await Bee.find({ status: 'adventuring' });
-
-  for (const bee of bees) {
-    const timeLeft = bee.adventureEndTime - now;
-
-    if (timeLeft <= 0) {
-      // Adventure already finished while bot was offline
-      finishAdventure(bee);
-    } else {
-      // Set timeout to finish later
-      setTimeout(() => finishAdventure(bee), timeLeft);
-    }
-  }
-});
-
-
 // XP/EP level helper
 
 const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded } = require('./levelUtils');
@@ -66,73 +46,6 @@ const {
 } = require('discord.js');
 
 const Bee = require('./models/Bee');
-
-//--- adventure restart check---
-async function finishAdventure(bee, user) {
-  const Inventory = require('./models/Inventory');
-  const adventureDuration = bee.adventureEndTime - (Date.now() - 1000); // buffer
-
-  let reward;
-  if (adventureDuration <= 3600000) {
-    reward = { xp: 5, coinMin: 7, coinMax: 15, flowerChance: 0.02, cooldown: 12 * 3600000 };
-  } else if (adventureDuration <= 3 * 3600000) {
-    reward = { xp: 12, coinMin: 12, coinMax: 30, flowerChance: 0.05, cooldown: 24 * 3600000 };
-  } else {
-    reward = { xp: 35, coinMin: 23, coinMax: 50, flowerChance: 0.07, cooldown: 48 * 3600000 };
-  }
-
-  const previousLevel = getXpLevel(bee.xp);
-  const newLevel = getXpLevel(bee.xp + reward.xp);
-
-  // Adjust rewards for level
-  if (newLevel >= 5) reward.coinMin += 5, reward.coinMax += 5;
-  if (newLevel >= 9) reward.flowerChance += 0.02;
-
-  const coins = Math.floor(Math.random() * (reward.coinMax - reward.coinMin + 1)) + reward.coinMin;
-  const foundFlower = Math.random() < reward.flowerChance;
-
-  // Update bee and inventory
-  bee.xp += reward.xp;
-  bee.status = 'cooldown';
-  bee.adventureEndTime = null;
-  bee.cooldownEndTime = new Date(Date.now() + reward.cooldown);
-  await bee.save();
-
-  const inventory = await Inventory.findOneAndUpdate(
-    { userId: bee.ownerId },
-    { $inc: { coins, flowers: foundFlower ? 1 : 0 } },
-    { upsert: true, new: true }
-  );
-
-  // Send results to user
-  const userTag = `<@${bee.ownerId}>`;
-  const channel = await client.channels.fetch(user.dmChannel?.id || user.lastMessage?.channelId);
-  const embed = new EmbedBuilder()
-    .setColor('#ffe419')
-    .setTitle(`Bee ${bee.beeId} returns!`)
-    .setDescription(`${userTag}, your bee has returned from its adventure!`)
-    .addFields(
-      { name: 'XP Earned', value: `${reward.xp} ✨`},
-      { name: 'Coins Earned', value: `${coins} 🪙`},
-      ...(foundFlower ? [{ name: 'Found a Flower', value: `🌸`}] : [])
-    )
-    .setTimestamp();
-
-  if (channel) await channel.send({ embeds: [embed] });
-
-  // Send level-up message
-  if (newLevel > previousLevel) {
-    const levelChannel = await client.channels.fetch('1394792906849652977');
-    const levelEmbed = new EmbedBuilder()
-      .setColor('#ffe419')
-      .setTitle(`Bee ${bee.beeId} has leveled up!`)
-      .setDescription(`Your bee ${bee.beeId} leveled up in XP! Level ${previousLevel} → Level ${newLevel}`)
-      .setTimestamp();
-
-    await levelChannel.send({ content: `<@${bee.ownerId}>`, embeds: [levelEmbed] });
-  }
-}
-
 
 // ---!bee commands---
 
@@ -555,13 +468,28 @@ if (command === '!work') {
 
   // Random work messages
   const workMessages = [
-    "You do some gardening and earn some coins from a grateful swarm of bees.",
-    "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
+    "You do some gardening and earn some coins from a grateful swarm of bees.🐝",
+    "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all. 🦆",
     "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
-    "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
-    "Some coins are left to you by a farmer after helping them on the field.",
-    "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
-    "Oh no! You caught a bear cub nose deep in a tub of honey! It thanks you sheepishly for cleaning it up with some coins."
+    "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely. 🐥",
+    "Some coins are left to you by a farmer after helping them on the field. 🌱",
+    "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work. 🌷",
+    "Oh no! You caught a bear cub nose deep in a tub of honey! It thanks you sheepishly for cleaning it up with some coins. 🐻",
+    "While wandering through the meadow, you stumble upon a hidden patch of wild berries. You gather some and find a few coins tucked beneath the leaves. 🍓",
+    "You rescue a baby bird tangled in vines. After freeing it, you find a small pouch of coins waiting for you in the nest. 🐤",
+    "After planting new blossoms in the garden, you notice a cluster of bees buzzing happily around you, leaving a few coins as a sweet reward. 🐝",
+    "While walking through the quiet forest, you find a baby deer tangled in some vines, frightened and struggling. After freeing it, you notice a small pouch of coins where the deer had been resting. 🦌",
+    "You spend the morning helping out at the local stable, mucking out the stalls and brushing the horses. The stable master rewards your hard work with a handful of coins. 🐴",
+    "You lend a hand to a farmer by repairing a broken fence that kept his animals safe. As you hammer the last nail in place, the farmer approaches with a basket of fresh produce and some coins. 🔨",
+    "You try to teach a squirrel to dance, but it just ends up throwing acorns at you. Somehow, you still end up with a handful of coins as a ‘thank you’... or maybe a bribe? 🌰",
+    "You accidentally scare a family of ducks into a pond, then spend the next hour trying to convince them you’re not a monster. At least one duck waddles over and drops some coins at your feet — probably as a peace offering. 🦆",
+    "You attempt to help a clumsy crow find its lost shiny objects but only manage to gather a pile of random junk: a button, a spoon, and… oh, wait, some coins! Score! 🥄",
+    "You pick fresh vegetables from the garden and carry them to the market stall. The grateful vendor hands you some coins for your help. 🥬",
+    "You feed the chickens, collect eggs, and tidy up the coop. The farmer smiles and slips some coins into your pocket for a job well done. 🥚",
+    "You try to milk a stubborn cow, but it’s more interested in licking your face. Eventually, you get a bucket full of milk, and a handful of coins from the amused farmer. 🐄",
+    "You attempt to herd sheep, but they seem to prefer playing follow-the-leader with you instead. At least the shepherd tosses you some coins for the entertainment. 🐑",
+    "You try to train a chicken to fetch tools, but it just hops in circles. Your unusual method somehow earns you a few coins from the farmer. 🐓",
+    "On the way to work, you spot a... unicorn?? Magically, a pouch of shimmering coins appear before your feet, and the unicorn... horse... winks at you before disappearing. 🦄"
   ];
 
   const randomMessage = workMessages[Math.floor(Math.random() * workMessages.length)];
@@ -591,258 +519,8 @@ if (command === '!work') {
   logChannel.send({ embeds: [logEmbed] });
 }
   
-  //---!adventure---
- if (command === '!adventure') {
-  const beeId = args[1];
-  if (!beeId) return message.reply('Usage: `!adventure [Bee ID]`');
-
-  const bee = await Bee.findOne({ beeId });
-  if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
-
-  if (bee.ownerId !== message.author.id) {
-    return message.reply('That bee doesn’t belong to you!');
-  }
-
-  const now = new Date();
-
-  if (bee.onAdventureUntil && bee.onAdventureUntil > now) {
-    const returnTime = `<t:${Math.floor(bee.onAdventureUntil.getTime() / 1000)}:R>`;
-    return message.reply(`That bee is still on an adventure! It will return ${returnTime}.`);
-  }
-
-  if (bee.cooldownUntil && bee.cooldownUntil > now) {
-    const readyTime = `<t:${Math.floor(bee.cooldownUntil.getTime() / 1000)}:R>`;
-    return message.reply(`That bee is resting after its last adventure. It will be ready ${readyTime}.`);
-  }
-
-  // Show adventure options
-  const row = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId(`adventure_1h_${beeId}`).setLabel('1h').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId(`adventure_3h_${beeId}`).setLabel('3h').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId(`adventure_8h_${beeId}`).setLabel('8h').setStyle(ButtonStyle.Primary),
-  );
-
-  const embed = new EmbedBuilder()
-    .setColor(0xffe419)
-    .setTitle(`Adventure Time? 🌸 \`${beeId}\``)
-    .setDescription([
-      `How long should your Bee adventure for?`,
-    ].join('\n'))
-    .setFooter({ text: 'Apis Equinus' })
-    .setTimestamp();
-
-  return message.reply({ embeds: [embed], components: [row] });
-}
-});
-
-client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isButton()) return;
-
-  const [prefix, hours, beeId] = interaction.customId.split('_');
-  if (prefix !== 'adventure') return;
-
-  await interaction.deferReply();
-
-  const bee = await Bee.findOne({ beeId });
-  if (!bee) return interaction.followUp({ content: `No bee found with ID \`${beeId}\`` });
-
-  if (bee.ownerId !== interaction.user.id) {
-    return interaction.followUp({ content: 'That bee doesn’t belong to you!' });
-  }
-
-  const now = new Date();
-  if (bee.onAdventureUntil && bee.onAdventureUntil > now) {
-    const returnTime = `<t:${Math.floor(bee.onAdventureUntil.getTime() / 1000)}:R>`;
-    return interaction.followUp({ content: `That bee is still on an adventure! It returns ${returnTime}.` });
-  }
-
-  if (bee.cooldownUntil && bee.cooldownUntil > now) {
-    const readyTime = `<t:${Math.floor(bee.cooldownUntil.getTime() / 1000)}:R>`;
-    return interaction.followUp({ content: `That bee is resting. It will be ready ${readyTime}.` });
-  }
-
-  // Adventure config
-  const options = {
-    '1h': { xp: 5, minCoins: 7, maxCoins: 15, flowerChance: 2, cooldownHours: 12 },
-    '3h': { xp: 12, minCoins: 12, maxCoins: 30, flowerChance: 5, cooldownHours: 24 },
-    '8h': { xp: 35, minCoins: 23, maxCoins: 50, flowerChance: 7, cooldownHours: 48 },
-  };
-
-  const config = options[hours];
-  const level = getXpLevel(bee.xp);
-
-  if (level >= 5) {
-    config.minCoins += 5;
-    config.maxCoins += 5;
-  }
-  if (level >= 9) {
-    config.flowerChance += 2;
-  }
-  
-
-  // Set timers
-
-// Normalize and parse input like "1h30m", "2h", "45m", "2h 15m"
-const timeString = hours.toLowerCase().replace(/\s+/g, ''); // remove spaces
-const match = timeString.match(/(?:(\d+)h)?(?:(\d+)m)?/);
-
-let totalMs = 0;
-if (match) {
-  const h = parseInt(match[1]) || 0;
-  const m = parseInt(match[2]) || 0;
-  totalMs = (h * 60 + m) * 60 * 1000;
-}
-
-
-// Convert "1h", "30m", etc. to minutes
-let durationMinutes = 0;
-
-if (hours.endsWith('h')) {
-  durationMinutes = parseFloat(hours) * 60;
-} else if (hours.endsWith('m')) {
-  durationMinutes = parseFloat(hours);
-} else {
-  return message.reply('Invalid time format! Use `1h` or `30m`.');
-}
-
-// Make sure it's a valid number
-if (isNaN(durationMinutes) || durationMinutes <= 0) {
-  return message.reply('Invalid duration.');
-}
-
-// Final adventure duration in ms
-const ms = durationMinutes * 60 * 1000;
-
-// Set adventure status and timers
-bee.status = 'adventuring';
-bee.adventureEndTime = new Date(now.getTime() + ms);
-bee.cooldownEndTime = new Date(now.getTime() + ms + config.cooldownMinutes * 60 * 1000);
-
-await bee.save();
-
-
-// Apply adventure and cooldown times
-bee.adventureEndTime = new Date(now.getTime() + totalMs);
-bee.cooldownEndTime = new Date(now.getTime() + totalMs + config.cooldownHours * 5 * 1000);
-await bee.save();
-
-
-  
-  await interaction.editReply({
-  content: `🐝 Bee \`${bee.beeId}\` is now on an adventure! They will return in ${hours}.`
-});
-try {
-  const originalMsg = await interaction.message.fetch();
-  await originalMsg.edit({ components: [] });
-} catch (err) {
-  console.warn('Could not remove buttons:', err);
-}
-
-const remainingTime = bee.adventureEndTime - Date.now();
-
-if (remainingTime <= 0) {
-  const user = await client.users.fetch(bee.ownerId);
-  await finishAdventure(bee, user);
-} else {
-  setTimeout(async () => {
-    const user = await client.users.fetch(bee.ownerId);
-    await finishAdventure(bee, user);
-  }, remainingTime); // this will now be 1h, 3h, or 8h in ms
-}
-  
-const adventureEnd = new Date(now.getTime() + config.duration * 60 * 1000); // change back time 60 60 1000
-const cooldownEnd = new Date(now.getTime() + config.cooldown * 5 * 1000); //change back time 60 60 1000
-
-bee.status = 'adventuring';
-bee.adventureEndTime = adventureEnd;
-bee.cooldownEndTime = cooldownEnd;
-await bee.save();
-
-  // Schedule result
-  setTimeout(async () => {
-    const Inventory = require('./models/Inventory');
-    const user = await client.users.fetch(bee.ownerId);
-    let inventory = await Inventory.findOne({ userId: user.id });
-    if (!inventory) {
-      inventory = new Inventory({ userId: user.id });
-    }
-
-    const coinReward = Math.floor(Math.random() * (config.maxCoins - config.minCoins + 1)) + config.minCoins;
-    const flowerFound = Math.random() * 100 < config.flowerChance;
-
-    inventory.coins += coinReward;
-    if (flowerFound) inventory.flowers += 1;
-    await inventory.save();
-    bee.xp += config.xp;
-    const prevLevel = getXpLevel(bee.xp - config.xp);
-const newLevel = getXpLevel(bee.xp);
-
-if (newLevel > prevLevel) {
-  const levelUpChannel = await client.channels.fetch('1394792906849652977');
-  await levelUpChannel.send({
-    content: `<@${bee.ownerId}>`,
-    embeds: [
-      new EmbedBuilder()
-        .setColor(0xffe419)
-        .setTitle(`Bee ${bee.beeId} has leveled up!`)
-        .setDescription(`Your bee \`${bee.beeId}\` leveled up in **XP**!\nLevel ${prevLevel} → Level ${newLevel}`)
-        .setTimestamp()
-    ]
-  });
-}
-    await bee.save();
-
-    bee.onAdventureUntil = null;
-    await bee.save();
-
-    const messages = [
-      "Your bee returned with muddy wings but a proud buzz.",
-      "The journey was long, but fruitful!",
-      "Your bee faced many perils… and brought back loot.",
-      "The bee flew far and wide, and has returned safely.",
-      "A happy hum echoes — your bee is back!",
-    ];
-    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-
-    const resultEmbed = new EmbedBuilder()
-      .setColor(0xffe419)
-      .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
-      .setTitle( `Bee ${bee.beeId} returns!` )
-      .setDescription([
-      `${randomMsg}`,
-      ``,
-      `Earned: **${config.xp} XP**`,
-      `Collected: **${coinReward} 🪙**`,
-      flowerFound ? `Also found: **1 🌸**` : `No flowers found this time.`,
-     ].join('\n'))
-      .setFooter({ text: `Adventure complete for bee ${bee.beeId}` })
-      .setTimestamp();
-
-    const channel = await client.channels.fetch(interaction.channelId);
-    await channel.send({ content: `<@${user.id}>`, embeds: [resultEmbed] });
-
-  }, ms);
-});
-
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
 client.login(TOKEN);
 
-client.once('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}`);
-
-  const Bee = require('./models/Bee');
-  const bees = await Bee.find({ status: 'adventuring' });
-
-  for (const bee of bees) {
-    const timeLeft = bee.adventureEndTime - Date.now();
-    const user = await client.users.fetch(bee.ownerId);
-
-    if (timeLeft <= 0) {
-      finishAdventure(bee, user); // adventure already ended while bot was offline
-    } else {
-      setTimeout(() => finishAdventure(bee, user), timeLeft); // set up to finish later
-    }
-  }
-});
