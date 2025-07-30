@@ -33,9 +33,11 @@ client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
-const Bee = require('./models/Bee'); 
 const { getXpLevel } = require('./levelUtils');
 const { EmbedBuilder } = require('discord.js');
+const Bee = require('./models/Bee'); 
+
+client.once('ready', async () => {
 
   const now = Date.now();
   const bees = await Bee.find({ status: 'adventuring' });
