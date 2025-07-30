@@ -32,6 +32,28 @@ app.listen(PORT, () => {
 client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
+
+const Bee = require('./models/Bee'); 
+const { getXpLevel } = require('./levelUtils');
+const { EmbedBuilder } = require('discord.js');
+
+  const now = Date.now();
+  const bees = await Bee.find({ status: 'adventuring' });
+
+  for (const bee of bees) {
+    const timeLeft = bee.adventureEndTime - now;
+
+    if (timeLeft <= 0) {
+      // Adventure already finished while bot was offline
+      finishAdventure(bee);
+    } else {
+      // Set timeout to finish later
+      setTimeout(() => finishAdventure(bee), timeLeft);
+    }
+  }
+});
+
+
 // XP/EP level helper
 
 const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded } = require('./levelUtils');
@@ -44,9 +66,78 @@ const {
   ChannelType,
 } = require('discord.js');
 
+const Bee = require('./models/Bee');
+
+//--- adventure restart check---
+async function finishAdventure(bee, user) {
+  const Inventory = require('./models/Inventory');
+  const { getXpLevel } = require('./levelUtils');
+  const now = Date.now();
+  const adventureDuration = bee.adventureEndTime - (now - 1000); // buffer
+
+  let reward;
+  if (adventureDuration <= 3600000) {
+    reward = { xp: 5, coinMin: 7, coinMax: 15, flowerChance: 0.02, cooldown: 12 * 3600000 };
+  } else if (adventureDuration <= 3 * 3600000) {
+    reward = { xp: 12, coinMin: 12, coinMax: 30, flowerChance: 0.05, cooldown: 24 * 3600000 };
+  } else {
+    reward = { xp: 35, coinMin: 23, coinMax: 50, flowerChance: 0.07, cooldown: 48 * 3600000 };
+  }
+
+  const previousLevel = getXpLevel(bee.xp);
+  const newLevel = getXpLevel(bee.xp + reward.xp);
+
+  // Adjust rewards for level
+  if (newLevel >= 5) reward.coinMin += 5, reward.coinMax += 5;
+  if (newLevel >= 9) reward.flowerChance += 0.02;
+
+  const coins = Math.floor(Math.random() * (reward.coinMax - reward.coinMin + 1)) + reward.coinMin;
+  const foundFlower = Math.random() < reward.flowerChance;
+
+  // Update bee and inventory
+  bee.xp += reward.xp;
+  bee.status = 'cooldown';
+  bee.adventureEndTime = null;
+  bee.cooldownEndTime = new Date(Date.now() + reward.cooldown);
+  await bee.save();
+
+  const inventory = await Inventory.findOneAndUpdate(
+    { userId: bee.ownerId },
+    { $inc: { coins, flowers: foundFlower ? 1 : 0 } },
+    { upsert: true, new: true }
+  );
+
+  // Send results to user
+  const userTag = `<@${bee.ownerId}>`;
+  const channel = await client.channels.fetch(user.dmChannel?.id || user.lastMessage?.channelId);
+  const embed = new EmbedBuilder()
+    .setColor('#ffe419')
+    .setTitle(`Bee ${bee.beeId} returns!`)
+    .setDescription(`${userTag}, your bee has returned from its adventure!`)
+    .addFields(
+      { name: 'XP Earned', value: `${reward.xp} ✨`},
+      { name: 'Coins Earned', value: `${coins} 🪙`},
+      ...(foundFlower ? [{ name: 'Found a Flower', value: `🌸`}] : [])
+    )
+    .setTimestamp();
+
+  if (channel) await channel.send({ embeds: [embed] });
+
+  // Send level-up message
+  if (newLevel > previousLevel) {
+    const levelChannel = await client.channels.fetch('1394792906849652977');
+    const levelEmbed = new EmbedBuilder()
+      .setColor('#ffe419')
+      .setTitle(`Bee ${bee.beeId} has leveled up!`)
+      .setDescription(`Your bee ${bee.beeId} leveled up in XP! Level ${previousLevel} → Level ${newLevel}`)
+      .setTimestamp();
+
+    await levelChannel.send({ content: `<@${bee.ownerId}>`, embeds: [levelEmbed] });
+  }
+}
+
 
 // ---!bee commands---
-const Bee = require('./models/Bee');
 
 client.on('messageCreate', async (message) => {
   // Ignore bots or non-commands
@@ -607,7 +698,20 @@ try {
 } catch (err) {
   console.warn('Could not remove buttons:', err);
 }
+  
+setTimeout(async () => {
+  const user = await client.users.fetch(bee.ownerId);
+  await finishAdventure(bee, user);
+}, durationInMs); // this should be 1h, 3h, or 8h in ms
 
+const now = new Date();
+const adventureEnd = new Date(now.getTime() + config.duration * 60 * 1000); // change back time 60 60 1000
+const cooldownEnd = new Date(now.getTime() + config.cooldown * 5 * 1000); //change back time 60 60 1000
+
+bee.status = 'adventuring';
+bee.adventureEndTime = adventureEnd;
+bee.cooldownEndTime = cooldownEnd;
+await bee.save();
 
   // Schedule result
   setTimeout(async () => {
@@ -680,3 +784,20 @@ if (newLevel > prevLevel) {
 const TOKEN = process.env.DISCORD_TOKEN;
 client.login(TOKEN);
 
+client.once('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}`);
+
+  const Bee = require('./models/Bee');
+  const bees = await Bee.find({ status: 'adventuring' });
+
+  for (const bee of bees) {
+    const timeLeft = bee.adventureEndTime - Date.now();
+    const user = await client.users.fetch(bee.ownerId);
+
+    if (timeLeft <= 0) {
+      finishAdventure(bee, user); // adventure already ended while bot was offline
+    } else {
+      setTimeout(() => finishAdventure(bee, user), timeLeft); // set up to finish later
+    }
+  }
+});
