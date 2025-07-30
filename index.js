@@ -35,7 +35,6 @@ client.once('ready', () => {
 // XP/EP level helper
 
 const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded } = require('./levelUtils');
-const ADVENTURE_CHANNEL_ID = '1393923129008586753';
 
 const {
   ActionRowBuilder,
@@ -503,8 +502,151 @@ if (command === '!work') {
 
   logChannel.send({ embeds: [logEmbed] });
 }
-
   
+  //---!adventure---
+ if (command === '!adventure') {
+  const beeId = args[1];
+  if (!beeId) return message.reply('Usage: `!adventure [Bee ID]`');
+
+  const bee = await Bee.findOne({ beeId });
+  if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
+
+  if (bee.ownerId !== message.author.id) {
+    return message.reply('That bee doesn’t belong to you!');
+  }
+
+  const now = new Date();
+
+  if (bee.onAdventureUntil && bee.onAdventureUntil > now) {
+    const returnTime = `<t:${Math.floor(bee.onAdventureUntil.getTime() / 1000)}:R>`;
+    return message.reply(`That bee is still on an adventure! It will return ${returnTime}.`);
+  }
+
+  if (bee.cooldownUntil && bee.cooldownUntil > now) {
+    const readyTime = `<t:${Math.floor(bee.cooldownUntil.getTime() / 1000)}:R>`;
+    return message.reply(`That bee is resting after its last adventure. It will be ready ${readyTime}.`);
+  }
+
+  // Show adventure options
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId(`adventure_1h_${beeId}`).setLabel('1h').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(`adventure_3h_${beeId}`).setLabel('3h').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId(`adventure_8h_${beeId}`).setLabel('8h').setStyle(ButtonStyle.Primary),
+  );
+
+  const embed = new EmbedBuilder()
+    .setColor(0xffe419)
+    .setTitle(`Adventure Time? 🌸 \`${beeId}\``)
+    .setDescription([
+      `How long should your Bee adventure for?`,
+    ].join('\n'))
+    .setFooter({ text: 'Apis Equinus' })
+    .setTimestamp();
+
+  return message.reply({ embeds: [embed], components: [row] });
+}
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const [prefix, hours, beeId] = interaction.customId.split('_');
+  if (prefix !== 'adventure') return;
+
+  await interaction.deferUpdate();
+
+  const bee = await Bee.findOne({ beeId });
+  if (!bee) return interaction.followUp({ content: `No bee found with ID \`${beeId}\`` });
+
+  if (bee.ownerId !== interaction.user.id) {
+    return interaction.followUp({ content: 'That bee doesn’t belong to you!' });
+  }
+
+  const now = new Date();
+  if (bee.onAdventureUntil && bee.onAdventureUntil > now) {
+    const returnTime = `<t:${Math.floor(bee.onAdventureUntil.getTime() / 1000)}:R>`;
+    return interaction.followUp({ content: `That bee is still on an adventure! It returns ${returnTime}.` });
+  }
+
+  if (bee.cooldownUntil && bee.cooldownUntil > now) {
+    const readyTime = `<t:${Math.floor(bee.cooldownUntil.getTime() / 1000)}:R>`;
+    return interaction.followUp({ content: `That bee is resting. It will be ready ${readyTime}.` });
+  }
+
+  // Adventure config
+  const options = {
+    '1h': { xp: 5, minCoins: 7, maxCoins: 15, flowerChance: 2, cooldownHours: 12 },
+    '3h': { xp: 12, minCoins: 12, maxCoins: 30, flowerChance: 5, cooldownHours: 24 },
+    '8h': { xp: 35, minCoins: 23, maxCoins: 50, flowerChance: 7, cooldownHours: 48 },
+  };
+
+  const config = options[hours];
+  const level = getXpLevel(bee.xp);
+
+  if (level >= 5) {
+    config.minCoins += 5;
+    config.maxCoins += 5;
+  }
+  if (level >= 9) {
+    config.flowerChance += 2;
+  }
+
+  // Set timers
+  const ms = parseInt(hours) * 60 * 1000; //change time back
+  bee.onAdventureUntil = new Date(now.getTime() + ms);
+  bee.cooldownUntil = new Date(now.getTime() + ms + config.cooldownHours * 60 * 60 * 1000);
+  bee.xp += config.xp;
+  await bee.save();
+
+  await interaction.followUp({
+    content: `🐝 Bee \`${bee.beeId}\` has begun a ${hours} adventure!`,
+    ephemeral: true
+  });
+
+  // Schedule result
+  setTimeout(async () => {
+    const user = await client.users.fetch(bee.ownerId);
+    let inventory = await Inventory.findOne({ userId: user.id });
+    if (!inventory) {
+      inventory = new Inventory({ userId: user.id });
+    }
+
+    const coinReward = Math.floor(Math.random() * (config.maxCoins - config.minCoins + 1)) + config.minCoins;
+    const flowerFound = Math.random() * 100 < config.flowerChance;
+
+    inventory.coins += coinReward;
+    if (flowerFound) inventory.flowers += 1;
+    await inventory.save();
+
+    bee.onAdventureUntil = null;
+    await bee.save();
+
+    const messages = [
+      "Your bee returned with muddy wings but a proud buzz.",
+      "The journey was long, but fruitful!",
+      "Your bee faced many perils… and brought back loot.",
+      "The bee flew far and wide, and has returned safely.",
+      "A happy hum echoes — your bee is back!",
+    ];
+    const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+
+    const resultEmbed = new EmbedBuilder()
+      .setColor(0xffe419)
+      .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
+      .setTitle([ `Bee ${bee.beeId} returns!` ])
+      .setDescription([
+        `${randomMsg}`,
+        ``,
+        `Collected: **${coinReward} 🪙**`,
+        flowerFound ? `Also found: **1 🌸**` : `No flowers found this time.`,
+      ].join('\n'))
+      .setFooter({ text: `Adventure complete for bee ${bee.beeId}` })
+      .setTimestamp();
+
+    const channel = await client.channels.fetch(interaction.channelId);
+    await channel.send({ content: `<@${user.id}>`, embeds: [resultEmbed] });
+
+  }, ms);
+});
+
 });
 
 // Log in bot
