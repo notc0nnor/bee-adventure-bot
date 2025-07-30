@@ -693,19 +693,38 @@ if (match) {
   totalMs = (h * 60 + m) * 60 * 1000;
 }
 
-if (totalMs === 0) {
-  // If nothing parsed, try fallback: treat plain number as hours
-  const fallbackHours = parseInt(hours);
-  if (!isNaN(fallbackHours)) {
-    totalMs = fallbackHours * 60 * 60 * 1000;
-  } else {
-    return message.reply("❌ Invalid time format. Use something like `1h30m`, `45m`, or `2h`.");
-  }
+const now = new Date();
+
+// Convert "1h", "30m", etc. to minutes
+let durationMinutes = 0;
+
+if (hours.endsWith('h')) {
+  durationMinutes = parseFloat(hours) * 60;
+} else if (hours.endsWith('m')) {
+  durationMinutes = parseFloat(hours);
+} else {
+  return message.reply('Invalid time format! Use `1h` or `30m`.');
 }
+
+// Make sure it's a valid number
+if (isNaN(durationMinutes) || durationMinutes <= 0) {
+  return message.reply('Invalid duration.');
+}
+
+// Final adventure duration in ms
+const ms = durationMinutes * 60 * 1000;
+
+// Set adventure status and timers
+bee.status = 'adventuring';
+bee.adventureEndTime = new Date(now.getTime() + ms);
+bee.cooldownEndTime = new Date(now.getTime() + ms + config.cooldownMinutes * 60 * 1000);
+
+await bee.save();
+
 
 // Apply adventure and cooldown times
 bee.adventureEndTime = new Date(now.getTime() + totalMs);
-bee.cooldownEndTime = new Date(now.getTime() + totalMs + config.cooldownHours * 60 * 60 * 1000);
+bee.cooldownEndTime = new Date(now.getTime() + totalMs + config.cooldownHours * 5 * 1000);
 await bee.save();
 
 
