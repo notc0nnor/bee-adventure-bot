@@ -701,7 +701,6 @@ setTimeout(async () => {
   await finishAdventure(bee, user);
 }, durationInMs); // this should be 1h, 3h, or 8h in ms
 
-const now = new Date();
 const adventureEnd = new Date(now.getTime() + config.duration * 60 * 1000); // change back time 60 60 1000
 const cooldownEnd = new Date(now.getTime() + config.cooldown * 5 * 1000); //change back time 60 60 1000
 
