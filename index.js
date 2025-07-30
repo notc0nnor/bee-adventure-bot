@@ -658,7 +658,7 @@ if (newLevel > prevLevel) {
     const resultEmbed = new EmbedBuilder()
       .setColor(0xffe419)
       .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
-      .setTitle([ `Bee ${bee.beeId} returns!` ])
+      .setTitle( `Bee ${bee.beeId} returns!` )
       .setDescription([
       `${randomMsg}`,
       ``,
