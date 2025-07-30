@@ -518,7 +518,7 @@ if (command === '!work') {
 
   logChannel.send({ embeds: [logEmbed] });
 }
-  
+});
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
