@@ -688,7 +688,6 @@ if (isNaN(ms)) {
 }
 
   // Set timers
-  const ms = parseInt(hours) * 60 * 1000; //change time back
   bee.onAdventureUntil = new Date(now.getTime() + ms);
   bee.cooldownUntil = new Date(now.getTime() + ms + config.cooldownHours * 5 * 1000); //change back time
   await bee.save();
