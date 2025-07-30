@@ -738,7 +738,7 @@ try {
 } catch (err) {
   console.warn('Could not remove buttons:', err);
 }
-  const ms = bee.adventureEndTime - Date.now();
+  let ms = bee.adventureEndTime - Date.now();
   if (ms <= 0) {
   const user = await client.users.fetch(bee.ownerId);
   await finishAdventure(bee, user);
