@@ -720,12 +720,17 @@ try {
 } catch (err) {
   console.warn('Could not remove buttons:', err);
 }
-  
+  const ms = bee.adventureEndTime - Date.now();
+  if (ms <= 0) {
+  const user = await client.users.fetch(bee.ownerId);
+  await finishAdventure(bee, user);
+} else {
 setTimeout(async () => {
   const user = await client.users.fetch(bee.ownerId);
   await finishAdventure(bee, user);
 }, ms); // this should be 1h, 3h, or 8h in ms
-
+  }
+  
 const adventureEnd = new Date(now.getTime() + config.duration * 60 * 1000); // change back time 60 60 1000
 const cooldownEnd = new Date(now.getTime() + config.cooldown * 5 * 1000); //change back time 60 60 1000
 
