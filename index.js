@@ -551,7 +551,7 @@ client.on('interactionCreate', async (interaction) => {
   const [prefix, hours, beeId] = interaction.customId.split('_');
   if (prefix !== 'adventure') return;
 
-  await interaction.deferUpdate();
+  await interaction.deferReply();
 
   const bee = await Bee.findOne({ beeId });
   if (!bee) return interaction.followUp({ content: `No bee found with ID \`${beeId}\`` });
@@ -596,10 +596,10 @@ client.on('interactionCreate', async (interaction) => {
   bee.xp += config.xp;
   await bee.save();
 
-  await interaction.followUp({
-    content: `🐝 Bee \`${bee.beeId}\` has begun a ${hours} adventure!`,
-    ephemeral: true
-  });
+  await interaction.editReply({
+  content: `🐝 Bee \`${bee.beeId}\` has begun a ${hours} adventure!`
+});
+
 
   // Schedule result
   setTimeout(async () => {
