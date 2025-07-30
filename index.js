@@ -693,7 +693,6 @@ if (match) {
   totalMs = (h * 60 + m) * 60 * 1000;
 }
 
-const now = new Date();
 
 // Convert "1h", "30m", etc. to minutes
 let durationMinutes = 0;
