@@ -545,6 +545,8 @@ if (command === '!work') {
 
   return message.reply({ embeds: [embed], components: [row] });
 }
+});
+
 client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
 
@@ -647,7 +649,6 @@ client.on('interactionCreate', async (interaction) => {
   }, ms);
 });
 
-});
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
