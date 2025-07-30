@@ -679,19 +679,38 @@ client.on('interactionCreate', async (interaction) => {
     config.flowerChance += 2;
   }
   
-console.log('hours:', hours);
-const ms = parseInt(hours) * 60 * 1000; //change time back
-
-if (isNaN(ms)) {
-  console.error('❌ ms is NaN! hours might be invalid:', hours);
-  return; // prevent saving bad data
-}
 
   // Set timers
-  bee.onAdventureUntil = new Date(now.getTime() + ms);
-  bee.cooldownUntil = new Date(now.getTime() + ms + config.cooldownHours * 5 * 1000); //change back time
-  await bee.save();
+const now = new Date();
 
+// Normalize and parse input like "1h30m", "2h", "45m", "2h 15m"
+const timeString = hours.toLowerCase().replace(/\s+/g, ''); // remove spaces
+const match = timeString.match(/(?:(\d+)h)?(?:(\d+)m)?/);
+
+let totalMs = 0;
+if (match) {
+  const h = parseInt(match[1]) || 0;
+  const m = parseInt(match[2]) || 0;
+  totalMs = (h * 60 + m) * 60 * 1000;
+}
+
+if (totalMs === 0) {
+  // If nothing parsed, try fallback: treat plain number as hours
+  const fallbackHours = parseInt(hours);
+  if (!isNaN(fallbackHours)) {
+    totalMs = fallbackHours * 60 * 60 * 1000;
+  } else {
+    return message.reply("❌ Invalid time format. Use something like `1h30m`, `45m`, or `2h`.");
+  }
+}
+
+// Apply adventure and cooldown times
+bee.adventureEndTime = new Date(now.getTime() + totalMs);
+bee.cooldownEndTime = new Date(now.getTime() + totalMs + config.cooldownHours * 60 * 60 * 1000);
+await bee.save();
+
+
+  
   await interaction.editReply({
   content: `🐝 Bee \`${bee.beeId}\` is now on an adventure! They will return in ${hours}.`
 });
