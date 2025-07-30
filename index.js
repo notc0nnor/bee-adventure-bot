@@ -444,6 +444,63 @@ if (command === '!remove' && args[1] === 'coins') {
     }],
   });
 }
+//---!work command---
+  if (subcommand === 'work') {
+  if (message.channel.id !== '1390013455305801748') {
+    return message.reply('Please visit <#1390013455305801748> to work.');
+  }
+
+  const userId = message.author.id;
+  const user = message.author;
+
+  const reward = Math.floor(Math.random() * (35 - 15 + 1)) + 15;
+  const descriptions = [
+    "You do some gardening and earn some coins from a grateful swarm of bees.",
+    "You find a mother duck frantically searching for her ducklings after playing hide and seek. You search around the terrain until you find them all.",
+    "You randomly find some coins in front of your doorstep. Maybe it's from someone you helped out before...🦆",
+    "Oh no! You see little ducklings get separated from their mother after a strong gust of winds blows them further downstream! After getting your clothes all wet, you manage to capture them all and return them safely.",
+    "Some coins are left to you by a farmer after helping them on the field.",
+    "You helped the local wildlife by sprinkling wildflower seeds. The little bees thank you for your hard work.",
+    "Oh no! You caught a bear cub nose deep in a tub of honey! It thanks you sheepishly for cleaning it up with some coins."
+  ];
+  const description = descriptions[Math.floor(Math.random() * descriptions.length)];
+
+  // Load or create inventory
+  let inventory = await Inventory.findOne({ userId });
+  if (!inventory) {
+    inventory = new Inventory({ userId, coins: 0 });
+  }
+
+  const previousCoins = inventory.coins;
+  inventory.coins += reward;
+  await inventory.save();
+
+  // User embed
+  const embed = new EmbedBuilder()
+    .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
+    .setDescription(`${description}\n\nYou earned ${reward} 🪙`)
+    .setColor('#85ffc4');
+
+  await message.reply({ embeds: [embed] });
+
+  // Logging embed
+const inventoryLogChannel = await client.channels.fetch('1394414785130532976'); // your actual logging channel
+if (inventoryLogChannel && inventoryLogChannel.isTextBased()) {
+  inventoryLogChannel.send({
+    embeds: [{
+      color: 0x85ffc4,
+      title: 'Inventory Change',
+      description: [
+        `**Added:** ${reward} 🪙`,
+        `**To:** <@${user.id}>`,
+        ``,
+        `**Coins:** ${inventory.coins - reward} → ${inventory.coins}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
+}
 
 // --- !adventure [ID] command ---
 if (command === '!adventure') {
