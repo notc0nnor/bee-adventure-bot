@@ -678,6 +678,14 @@ client.on('interactionCreate', async (interaction) => {
   if (level >= 9) {
     config.flowerChance += 2;
   }
+  
+console.log('hours:', hours);
+const ms = parseInt(hours) * 60 * 1000; //change time back
+
+if (isNaN(ms)) {
+  console.error('❌ ms is NaN! hours might be invalid:', hours);
+  return; // prevent saving bad data
+}
 
   // Set timers
   const ms = parseInt(hours) * 60 * 1000; //change time back
