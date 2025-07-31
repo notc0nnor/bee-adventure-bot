@@ -557,7 +557,7 @@ if (command === '!work') {
 
     await logChannel.send({ embeds: [flowerEmbed] });
   }
-}
+});
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
