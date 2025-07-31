@@ -457,7 +457,7 @@ if (command === '!work') {
   const LOG_CHANNEL_ID = '1394414785130532976';
 
   if (message.channel.id !== WORK_CHANNEL_ID) {
-    return message.reply('You can only use this command in the designated work channel.');
+    return message.reply('Please visit <#1390013455305801748> to work!');
   }
 
   const userId = message.author.id;
@@ -469,9 +469,18 @@ if (command === '!work') {
     inventory = new Inventory({ userId });
   }
 
-  const reward = Math.floor(Math.random() * (35 - 15 + 1)) + 15;
+  const reward = Math.floor(Math.random() * (45 - 20 + 1)) + 20;
   const previousCoins = inventory.coins;
   inventory.coins += reward;
+ 
+  // 1% flower chance
+  const foundFlower = Math.random() < 0.99; //change to 0.01
+  const previousFlowers = inventory.flowers ?? 0;
+
+  if (foundFlower) {
+    inventory.flowers = (inventory.flowers ?? 0) + 1;
+  }
+
   await inventory.save();
 
   // Random work messages
@@ -503,10 +512,17 @@ if (command === '!work') {
   const randomMessage = workMessages[Math.floor(Math.random() * workMessages.length)];
 
   // Reply embed
+   const resultDescription = [
+    `${randomMessage}`,
+    ``,
+    `You earned **${reward} 🪙**`,
+    foundFlower ? `Luck was on your side! You found 1 🌸` : null
+  ].filter(Boolean).join('\n');
+
   const workEmbed = new EmbedBuilder()
     .setColor(0xffe419)
     .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
-    .setDescription(`${randomMessage}\n\nYou earned **${reward} 🪙**`);
+    .setDescription(resultDescription);
 
   await message.reply({ embeds: [workEmbed] });
 
@@ -526,7 +542,22 @@ if (command === '!work') {
 
   logChannel.send({ embeds: [logEmbed] });
 }
-});
+   if (foundFlower) {
+    const flowerEmbed = new EmbedBuilder()
+      .setColor(0xffade8)
+      .setTitle('Inventory Change')
+      .setDescription([
+        `**Added:** 1 🌸`,
+        `**To:** <@${userId}>`,
+        `**By:** Working`,
+        ``,
+        `**Previous:** ${previousFlowers} → **Now:** ${inventory.flowers}`
+      ].join('\n'))
+      .setTimestamp();
+
+    await logChannel.send({ embeds: [flowerEmbed] });
+  }
+}
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
