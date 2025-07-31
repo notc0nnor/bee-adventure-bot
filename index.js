@@ -35,7 +35,7 @@ client.once('ready', () => {
 
 // XP/EP level helper
 
-const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded } = require('./levelUtils');
+const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded, getXpLevelThreshold } = require('./levelUtils');
 
 const {
   ActionRowBuilder,
