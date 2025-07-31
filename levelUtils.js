@@ -8,20 +8,26 @@ const epLevels = [
 ];
 
 function getEpLevel(ep) {
-  let currentLevel = { name: epLevels[0].name, level: 0 };
+  let currentLevel = epLevels[0];
+  let nextThreshold = null;
 
   for (let i = 1; i < epLevels.length; i++) {
     if (ep >= epLevels[i].ep) {
-      currentLevel = { name: epLevels[i].name, level: i };
+      currentLevel = epLevels[i];
     } else {
+      nextThreshold = epLevels[i].ep;
       break;
     }
   }
 
-  return currentLevel; // Example: { name: "Affectionate", level: 2 }
+  // If max level, nextThreshold stays null
+  return {
+    name: currentLevel.name,
+    current: currentLevel.ep,
+    next: nextThreshold
+  };
 }
-
-
+ 
 
 function getXpLevel(xp) {
   const xpLevels = [
