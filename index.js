@@ -475,7 +475,7 @@ if (command === '!work') {
   inventory.coins += reward;
  
   // 1% flower chance
-  const foundFlower = Math.random() < 0.99; //change to 0.01
+  const foundFlower = Math.random() < 0.01; 
   const previousFlowers = inventory.flowers ?? 0;
 
   if (foundFlower) {
