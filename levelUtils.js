@@ -8,25 +8,28 @@ const epLevels = [
 ];
 
 function getEpLevel(ep) {
-  let currentLevel = epLevels[0];
+  let currentLevel = 0;
+  let currentLevelObj = epLevels[0];
   let nextThreshold = null;
 
   for (let i = 1; i < epLevels.length; i++) {
     if (ep >= epLevels[i].ep) {
-      currentLevel = epLevels[i];
+      currentLevel = i;
+      currentLevelObj = epLevels[i];
     } else {
       nextThreshold = epLevels[i].ep;
       break;
     }
   }
 
-  // If max level, nextThreshold stays null
   return {
-    name: currentLevel.name,
-    current: currentLevel.ep,
+    level: currentLevel,        // <-- this is what was missing
+    name: currentLevelObj.name,
+    current: currentLevelObj.ep,
     next: nextThreshold
   };
 }
+
  
 
 function getXpLevel(xp) {
