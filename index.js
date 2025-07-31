@@ -541,8 +541,7 @@ if (command === '!work') {
     .setTimestamp();
 
   logChannel.send({ embeds: [logEmbed] });
-}
-   if (foundFlower) {
+if (foundFlower) {
     const flowerEmbed = new EmbedBuilder()
       .setColor(0xffade8)
       .setTitle('Inventory Change')
@@ -557,6 +556,7 @@ if (command === '!work') {
 
     await logChannel.send({ embeds: [flowerEmbed] });
   }
+}
 });
 
 // Log in bot
