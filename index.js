@@ -129,7 +129,7 @@ return message.reply({
       `Level: ${xpLevel}`,
       `XP: ${bee.xp}`,
       ``,
-      `Level: ${epLevel}`,
+      `Level: ${epLevel.name}`,
       `EP: ${bee.ep}`
     ].join('\n'),
     footer: { text: 'Apis Equinus' },
