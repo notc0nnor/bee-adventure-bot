@@ -254,9 +254,10 @@ return message.reply({
         timestamp: new Date(),
       }]
     });
+  return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
   }
 
-  return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
+
 }
 
 //---!inventory 
