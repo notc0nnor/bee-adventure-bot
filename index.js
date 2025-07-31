@@ -226,7 +226,7 @@ return message.reply({
 
   const trackChannel = await client.channels.fetch('1394792906849652977');
 
-  // Send regular EP update log
+  // EP stat change embed
   trackChannel.send({
     embeds: [{
       title: 'Bee Stat Change',
@@ -236,14 +236,13 @@ return message.reply({
     }]
   });
 
-  // Check for level up
   if (newLevelInfo.level > prevLevelInfo.level) {
     trackChannel.send({
       content: `<@${bee.ownerId}>`,
       embeds: [{
         title: `Bee ${bee.beeId} has leveled up!`,
         color: 0xffe419,
-        description: `Your bee \`${bee.beeId}\` leveled up in **EP**!\nLevel: **${prevLevelInfo.name}** → **${newLevelInfo.name}**`,
+        description: `Your bee \`${bee.beeId}\` leveled up in **EP**!\n**${prevLevelInfo.name}** → **${newLevelInfo.name}**`,
         timestamp: new Date(),
       }]
     });
@@ -251,6 +250,7 @@ return message.reply({
 
   return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
 }
+
 //---!inventory 
 
   const Inventory = require('./models/Inventory');
