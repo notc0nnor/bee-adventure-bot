@@ -8,18 +8,19 @@ const epLevels = [
 ];
 
 function getEpLevel(ep) {
-  let currentLevel = epLevels[0];
+  let currentLevel = { name: epLevels[0].name, level: 0 };
 
   for (let i = 1; i < epLevels.length; i++) {
     if (ep >= epLevels[i].ep) {
-      currentLevel = epLevels[i];
+      currentLevel = { name: epLevels[i].name, level: i };
     } else {
       break;
     }
   }
 
-  return currentLevel.name; // Return just the name (string)
+  return currentLevel; // Example: { name: "Affectionate", level: 2 }
 }
+
 
 
 function getXpLevel(xp) {
