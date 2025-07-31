@@ -116,9 +116,18 @@ client.on('messageCreate', async (message) => {
     const owner = await client.users.fetch(bee.ownerId);
 
 const xpLevel = getXpLevel(bee.xp);
+const nextXp = xpLevel < 10 ? getXpLevelThreshold(xpLevel + 1) : null;
 
 const epLevel = getEpLevel(bee.ep);
-    
+
+const xpLine = nextXp
+  ? `XP: ${bee.xp} / ${nextXp}`
+  : `XP: ${bee.xp} / MAX`;
+
+const epLine = epLevel.next
+  ? `EP: ${bee.ep} / ${epLevel.next}`
+  : `EP: ${bee.ep} / MAX`;
+
 return message.reply({
   embeds: [{
     color: 0xffe419,
@@ -127,16 +136,15 @@ return message.reply({
       `Owner: ${owner.tag}`,
       ``,
       `Level: ${xpLevel}`,
-      `XP: ${bee.xp}`,
+      xpLine,
       ``,
       `Level: ${epLevel.name}`,
-      `EP: ${bee.ep}`
+      epLine
     ].join('\n'),
     footer: { text: 'Apis Equinus' },
     timestamp: new Date(),
   }]
 });
-
   }
 
   // List all bees for the user
