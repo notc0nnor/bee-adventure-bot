@@ -470,7 +470,7 @@ if (command === '!work') {
     inventory = new Inventory({ userId });
   }
 
-  const reward = Math.floor(Math.random() * (45 - 20 + 1)) + 20;
+  const reward = Math.floor(Math.random() * (37 - 17 + 1)) + 17;
   const previousCoins = inventory.coins;
   inventory.coins += reward;
  
