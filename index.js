@@ -36,6 +36,8 @@ client.once('ready', () => {
 // EP level helper
 
 const { getLevel, getLevelThreshold } = require("./levelUtils");
+const fs = require("fs");
+const beeFacts = JSON.parse(fs.readFileSync("./beeFacts.json", "utf8"));
 
 const {
   ActionRowBuilder,
@@ -498,8 +500,21 @@ if (foundFlower) {
     await logChannel.send({ embeds: [flowerEmbed] });
   }
 }
-});
 
+// fact
+if (message.content === "!fact") {
+  const randomFact = beeFacts[Math.floor(Math.random() * beeFacts.length)];
+
+  const factEmbed = new EmbedBuilder()
+    .setColor(0x8af542) // golden yellow
+    .setTitle("Fun Fact!")
+    .setDescription(randomFact)
+    .setFooter({ text: "Buzzz... the more you know!" });
+
+  message.channel.send({ embeds: [factEmbed] });
+}
+
+});
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
