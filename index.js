@@ -198,7 +198,7 @@ if (command === '!add' && args[1] === 'ep') {
 
   return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
 }
-}
+})
 
 //---!inventory 
 
