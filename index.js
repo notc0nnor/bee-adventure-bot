@@ -502,6 +502,26 @@ if (foundFlower) {
 }
 
 // --!fact--
+
+const fs = require("fs");
+const beeFacts = JSON.parse(fs.readFileSync("./beeFacts.json", "utf8"));
+  
+const { EmbedBuilder } = require("discord.js");
+
+// Inside your messageCreate event
+if (message.content === "!fact") {
+  const randomFact = beeFacts[Math.floor(Math.random() * beeFacts.length)];
+
+  const factEmbed = new EmbedBuilder()
+    .setColor(0x8ef527)
+    .setTitle("🐝 Fun Fact!")
+    .setDescription(randomFact)
+    .setFooter({ text: "Buzzz... the more you know!" });
+
+  message.channel.send({ embeds: [factEmbed] });
+}
+  
+// --!buzz--
 if (message.content === "!buzz") {
   const beeGifs = [
     "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnZtZHg2ejFtZGE5bTg2MG81cmx2cjEzaXhhdnRuYnU1NnVlYWUwYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/THDBkIhJ42uqjXxXAs/giphy.gif",
@@ -535,6 +555,7 @@ if (message.content === "!buzz") {
 
   message.channel.send({ embeds: [gifEmbed] });
 }
+});
 
 const ITEMS_PER_PAGE = 10;
 
@@ -623,8 +644,6 @@ client.on("messageCreate", async (message) => {
       embedMessage.edit({ components: [] }).catch(() => {});
     });
   }
-});
-
 });
 
 // Log in bot
