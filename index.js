@@ -198,7 +198,7 @@ if (command === '!add' && args[1] === 'ep') {
 
   return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
 }
-})
+
 
 //---!inventory 
 
@@ -499,6 +499,7 @@ if (foundFlower) {
   }
 }
 });
+
 
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
