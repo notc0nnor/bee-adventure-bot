@@ -536,7 +536,6 @@ if (message.content === "!buzz") {
   message.channel.send({ embeds: [gifEmbed] });
 }
 
-})
 
 // --!buzz--
 if (message.content === "!buzz") {
@@ -556,6 +555,97 @@ if (message.content === "!buzz") {
 
   message.channel.send({ embeds: [gifEmbed] });
 }
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require("discord.js");
+const Inventory = require("./models/Inventory.js"); // adjust path if needed
+
+const ITEMS_PER_PAGE = 10;
+
+client.on("messageCreate", async (message) => {
+  if (message.content === "!leaderboard") {
+    let inventories = await Inventory.find().sort({ coins: -1 }).lean();
+
+    if (!inventories.length) return message.channel.send("No data found.");
+
+    // Find the user's rank
+    const userRank = inventories.findIndex(inv => inv.userId === message.author.id) + 1;
+
+    let page = 0;
+
+    const generateEmbed = (page) => {
+      const start = page * ITEMS_PER_PAGE;
+      const end = start + ITEMS_PER_PAGE;
+      const pageData = inventories.slice(start, end);
+
+      const embed = new EmbedBuilder()
+        .setColor(0xffc107)
+        .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+        .setTitle(`🏆 Coin Leaderboard`)
+        .setDescription(pageData.map((inv, i) => {
+          const rank = start + i + 1;
+          return `**#${rank}** <@${inv.userId}> — ${inv.coins} coins`;
+        }).join("\n"))
+        .setFooter({ text: `You are #${userRank}` });
+
+      return embed;
+    };
+
+    // Initial embed
+    const embedMessage = await message.channel.send({
+      embeds: [generateEmbed(page)],
+      components: [
+        new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId("prev")
+            .setLabel("⬅️ Prev")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(page === 0),
+          new ButtonBuilder()
+            .setCustomId("next")
+            .setLabel("Next ➡️")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled((page + 1) * ITEMS_PER_PAGE >= inventories.length)
+        )
+      ]
+    });
+
+    // Button interaction collector
+    const collector = embedMessage.createMessageComponentCollector({
+      componentType: ComponentType.Button,
+      time: 60000 // 1 minute
+    });
+
+    collector.on("collect", async (i) => {
+      if (i.user.id !== message.author.id) {
+        return i.reply({ content: "You can't control this leaderboard.", ephemeral: true });
+      }
+
+      if (i.customId === "next") page++;
+      if (i.customId === "prev") page--;
+
+      await i.update({
+        embeds: [generateEmbed(page)],
+        components: [
+          new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setCustomId("prev")
+              .setLabel("Prev")
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled(page === 0),
+            new ButtonBuilder()
+              .setCustomId("next")
+              .setLabel("Next")
+              .setStyle(ButtonStyle.Primary)
+              .setDisabled((page + 1) * ITEMS_PER_PAGE >= inventories.length)
+          )
+        ]
+      });
+    });
+
+    collector.on("end", () => {
+      embedMessage.edit({ components: [] }).catch(() => {});
+    });
+  }
+});
 
 });
 
