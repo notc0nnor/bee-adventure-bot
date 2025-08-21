@@ -482,7 +482,8 @@ if (command === '!work') {
       `**Previous:** ${previousCoins} → **Now:** ${inventory.coins}`
     ].join('\n'))
     .setTimestamp();
-
+  
+ const Inventory = require('./models/Inventory');
   logChannel.send({ embeds: [logEmbed] });
 if (foundFlower) {
     const flowerEmbed = new EmbedBuilder()
