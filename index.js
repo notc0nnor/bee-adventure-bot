@@ -536,26 +536,6 @@ if (message.content === "!buzz") {
   message.channel.send({ embeds: [gifEmbed] });
 }
 
-
-// --!buzz--
-if (message.content === "!buzz") {
-  const beeGifs = [
-    "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif",
-    "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
-    "https://media.giphy.com/media/26BRzozg4TCBXv6QU/giphy.gif"
-  ];
-
-  const randomGif = beeGifs[Math.floor(Math.random() * beeGifs.length)];
-
-  const gifEmbed = new EmbedBuilder()
-    .setColor(0xffc107)
-    .setTitle("🐝 Buzz!")
-    .setImage(randomGif)
-    .setFooter({ text: "Feel the buzz!" });
-
-  message.channel.send({ embeds: [gifEmbed] });
-}
-
 const ITEMS_PER_PAGE = 10;
 
 client.on("messageCreate", async (message) => {
