@@ -6,8 +6,8 @@ const levels = [
   { ep: 135,  name: "Interested" },         // Level 2
   { ep: 255,  name: "Connected" },          // Level 3
   { ep: 420,  name: "Friendly" },           // Level 4
-  { ep: 600,  name: "Trusting" },           // Level 5
-  { ep: 850,  name: "Affectionate" },       // Level 6
+  { ep: 600,  name: "Affectionate" },           // Level 5
+  { ep: 850,  name: "Trusting" },       // Level 6
   { ep: 1200, name: "Loyal" },              // Level 7
   { ep: 1600, name: "Loving" },             // Level 8
   { ep: 1950, name: "Bonded" },             // Level 9
