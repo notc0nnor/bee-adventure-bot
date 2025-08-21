@@ -555,8 +555,6 @@ if (message.content === "!buzz") {
 
   message.channel.send({ embeds: [gifEmbed] });
 }
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType } = require("discord.js");
-const Inventory = require("./models/Inventory.js"); // adjust path if needed
 
 const ITEMS_PER_PAGE = 10;
 
