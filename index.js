@@ -33,9 +33,9 @@ client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
-// XP/EP level helper
+// EP level helper
 
-const { getXpLevel, getEpLevel, getXpNeeded, getEpNeeded, getXpLevelThreshold } = require('./levelUtils');
+const { getLevel, getLevelThreshold } = require("./LevelUtils");
 
 const {
   ActionRowBuilder,
@@ -115,17 +115,10 @@ client.on('messageCreate', async (message) => {
 
     const owner = await client.users.fetch(bee.ownerId);
 
-const xpLevel = getXpLevel(bee.xp);
-const nextXp = xpLevel < 10 ? getXpLevelThreshold(xpLevel + 1) : null;
+const levelInfo = getLevel(bee.ep);
 
-const epLevel = getEpLevel(bee.ep);
-
-const xpLine = nextXp
-  ? `XP: ${bee.xp} / ${nextXp}`
-  : `XP: ${bee.xp} / MAX`;
-
-const epLine = epLevel.next
-  ? `EP: ${bee.ep} / ${epLevel.next}`
+const epLine = levelInfo.next
+  ? `EP: ${bee.ep} / ${levelInfo.next}`
   : `EP: ${bee.ep} / MAX`;
 
 return message.reply({
@@ -135,10 +128,7 @@ return message.reply({
     description: [
       `Owner: ${owner.tag}`,
       ``,
-      `Level: ${xpLevel}`,
-      xpLine,
-      ``,
-      `Level: ${epLevel.name}`,
+      `Level: ${levelInfo.level} (${levelInfo.name})`,
       epLine
     ].join('\n'),
     footer: { text: 'Apis Equinus' },
@@ -151,64 +141,15 @@ return message.reply({
   const bees = await Bee.find({ ownerId: message.author.id });
   if (!bees.length) return message.reply('You have no bees.');
 
-  let list = bees.map(b => `• \`${b.beeId}\` (XP: ${b.xp}, EP: ${b.ep})`).join('\n');
+  let list = bees.map(b => {
+  const lvl = getLevel(b.ep);
+  return `• \`${b.beeId}\` (Level ${lvl.level} - ${lvl.name}, EP: ${b.ep})`;
+}).join('\n');
 
   return message.reply(`🐝 Your Bees:\n${list}`);
 }
-// ---!add xp---
-  if (command === '!add' && args[1] === 'xp') {
-  if (message.author.id !== ADMIN_ID) {
-    return message.reply('You do not have permission to use this command.');
-  }
-
-  const amount = parseInt(args[2]);
-  const beeId = args[3];
-
-  if (isNaN(amount) || !beeId) {
-    return message.reply('Usage: `!add xp [amount] [beeId]`');
-  }
-
-  const bee = await Bee.findOne({ beeId });
-  if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
-
-  const prevXp = bee.xp;
-  const prevLevel = getXpLevel(prevXp);
-
-  // Add XP and save
-  bee.xp += amount;
-  await bee.save();
-
-  const newLevel = getXpLevel(bee.xp);
-
-  // Send stat change embed to log channel
-  const trackChannel = await client.channels.fetch('1394792906849652977');
-  trackChannel.send({
-    embeds: [{
-      title: 'Bee Stat Change',
-      color: 0x8140d6,
-      description: `Added: **${amount} XP**\nTo: \`${bee.beeId}\`\n\n**XP**: ${prevXp} → ${bee.xp}`,
-      timestamp: new Date(),
-    }]
-  });
-
-  // If leveled up, send level up embed
-  if (newLevel > prevLevel) {
-    trackChannel.send({
-      content: `<@${bee.ownerId}>`,
-      embeds: [{
-        title: `Bee ${bee.beeId} has leveled up!`,
-        color: 0xffe419,
-        description: `Your bee \`${bee.beeId}\` leveled up in **XP**!\nLevel ${prevLevel} → Level ${newLevel}`,
-        timestamp: new Date(),
-      }]
-    });
-  }
-
-  return message.reply(`Added ${amount} XP to bee \`${bee.beeId}\`.`);
-}
-
-//---!add ep---
-  if (command === '!add' && args[1] === 'ep') {
+// ---!add ep---
+if (command === '!add' && args[1] === 'ep') {
   if (message.author.id !== ADMIN_ID) {
     return message.reply('You do not have permission to use this command.');
   }
@@ -224,40 +165,39 @@ return message.reply({
   if (!bee) return message.reply(`No bee found with ID \`${beeId}\``);
 
   const prevEp = bee.ep;
-  const prevLevelInfo = getEpLevel(prevEp);
+  const prevLevelInfo = getLevel(prevEp);
 
-  // Update and save
+  // Add EP and save
   bee.ep += amount;
   await bee.save();
 
-  const newLevelInfo = getEpLevel(bee.ep);
+  const newLevelInfo = getLevel(bee.ep);
 
   const trackChannel = await client.channels.fetch('1394792906849652977');
-
-  // EP stat change embed
   trackChannel.send({
     embeds: [{
       title: 'Bee Stat Change',
-      color: 0xfa50d8,
+      color: 0x8140d6,
       description: `Added: **${amount} EP**\nTo: \`${bee.beeId}\`\n\n**EP**: ${prevEp} → ${bee.ep}`,
       timestamp: new Date(),
     }]
   });
 
+  // If leveled up
   if (newLevelInfo.level > prevLevelInfo.level) {
     trackChannel.send({
       content: `<@${bee.ownerId}>`,
       embeds: [{
         title: `Bee ${bee.beeId} has leveled up!`,
         color: 0xffe419,
-        description: `Your bee \`${bee.beeId}\` leveled up in **EP**!\n**${prevLevelInfo.name}** → **${newLevelInfo.name}**`,
+        description: `Your bee \`${bee.beeId}\` leveled up!\n**${prevLevelInfo.name}** → **${newLevelInfo.name}**`,
         timestamp: new Date(),
       }]
     });
-  return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
   }
 
-
+  return message.reply(`Added ${amount} EP to bee \`${bee.beeId}\`.`);
+}
 }
 
 //---!inventory 
