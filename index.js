@@ -35,7 +35,7 @@ client.once('ready', () => {
 
 // EP level helper
 
-const { getLevel, getLevelThreshold } = require("./LevelUtils");
+const { getLevel, getLevelThreshold } = require("./levelUtils");
 
 const {
   ActionRowBuilder,
