@@ -483,7 +483,7 @@ if (command === '!work') {
     ].join('\n'))
     .setTimestamp();
   
- const Inventory = require('./models/Inventory');
+
   logChannel.send({ embeds: [logEmbed] });
 if (foundFlower) {
     const flowerEmbed = new EmbedBuilder()
@@ -558,6 +558,7 @@ if (message.content === "!buzz") {
 }
 });
 
+ const Inventory = require('./models/Inventory');
 const ITEMS_PER_PAGE = 10;
 
 client.on("messageCreate", async (message) => {
