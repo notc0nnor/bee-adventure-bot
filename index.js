@@ -501,17 +501,60 @@ if (foundFlower) {
   }
 }
 
-// fact
-if (message.content === "!fact") {
-  const randomFact = beeFacts[Math.floor(Math.random() * beeFacts.length)];
+// --!fact--
+if (message.content === "!buzz") {
+  const beeGifs = [
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnZtZHg2ejFtZGE5bTg2MG81cmx2cjEzaXhhdnRuYnU1NnVlYWUwYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/THDBkIhJ42uqjXxXAs/giphy.gif",
+    "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzlrdXVmY2tlcmtmOTBpeDE4anNnbGdvZjl3aTI2ZnQ5MHl4dDdsMSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/osKmEJsZrrXUQW3V5a/giphy.gif",
+    "https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExZjgzYmlxaTZobjdqdjB5eHJ1a2V0c2wzajZja3MyOGllaGdvdmkxdyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1NQ7m0gqsah1XS4vG1/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWNna2FleWVmMW94ajY1OTVhODI5bWhxZDB0NGo0MHhzejhxbHcyaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Su12DRycqCCOjwHJkE/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeWNna2FleWVmMW94ajY1OTVhODI5bWhxZDB0NGo0MHhzejhxbHcyaiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ZRQZHqdoG3Po41Skng/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3YmJtcHZweWM0b2poYzhvMGI4bmxscDBoc3Jhd2toc3NwNWdwbndvdCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ggCcnhCAVdD8duVfrW/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzBiZHZiOGU3MzZmczN2ZTE0NGcxZnB0ZHQ2ZDU3dW5pYTVtN3RpMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/SWhoKfLvgsEp81mD1J/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzBiZHZiOGU3MzZmczN2ZTE0NGcxZnB0ZHQ2ZDU3dW5pYTVtN3RpMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/ASDjW6JScIK1GFBf44/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExZzBiZHZiOGU3MzZmczN2ZTE0NGcxZnB0ZHQ2ZDU3dW5pYTVtN3RpMSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/WOkrdOZIrjGkVJly9e/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3N2RtY2dkdnphYnNseDVtODE4anhpZXFpM3F2b2pvdXVyb3AyeGs3aSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/JmU24tAcyGKzif3peO/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3YnZhdTdzajFkYmI2NTdxbTFsaXMzdDhxcHoxY3p0enAwNW5ic2JucCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/1TicrQxbm00Io/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExdG50cHprNWUyNGRoM3A3cnpid2MxNGVkeHA1bHZjNmxkZW9uNnBrNCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/kPoGh51vLKuypsfbmR/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExazRmc2I5bmViOHI3NDZyemJqZDRjaHZzeW9kb2dvbnJ0a2tlazh4aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/H1AU4xUZClB91nl7lE/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExazRmc2I5bmViOHI3NDZyemJqZDRjaHZzeW9kb2dvbnJ0a2tlazh4aCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/6MDhe0f5PSAD1LQeiq/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3OWV2OWloN2ppbTBsMmJidmx1ODJzYWVoOWZxYmwzdHozYWQ4OXB0eSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/q0fsV57oAD56M/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3OWV2OWloN2ppbTBsMmJidmx1ODJzYWVoOWZxYmwzdHozYWQ4OXB0eSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Bpbh7Xxubh3gW2PG8K/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eXkxajV4eGRyM3dqanY4Yjhmb3Fmb3BjMTljNGV0emhsc2p4MDVhZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Upe3WPqlWutaFRyhgY/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eDkwNjJseHBsOW1yYWx5Mmc2b3Z0MGZvbGJ3dnV6d2xlOGd5ZXNidSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/l3fQ8wxtqxSH0PTJS/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eDkwNjJseHBsOW1yYWx5Mmc2b3Z0MGZvbGJ3dnV6d2xlOGd5ZXNidSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3owypow1DIRU6OgaHe/giphy.gif",
+    "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExc2xhOGxvcndwb2pqMWl1MXBlbzFyNmZnODJoNngxcW1tbnB6cGJkbyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l3976DSQtA2Iml09q/giphy.gif"
+  ];
 
-  const factEmbed = new EmbedBuilder()
-    .setColor(0x8af542) // golden yellow
-    .setTitle("Fun Fact!")
-    .setDescription(randomFact)
-    .setFooter({ text: "Buzzz... the more you know!" });
+  const randomGif = beeGifs[Math.floor(Math.random() * beeGifs.length)];
 
-  message.channel.send({ embeds: [factEmbed] });
+  const gifEmbed = new EmbedBuilder()
+    .setColor(0xfff538)
+    .setImage(randomGif)
+    .setFooter({ text: "Buzz buzz!" });
+
+  message.channel.send({ embeds: [gifEmbed] });
+}
+
+}
+
+// --!buzz--
+if (message.content === "!buzz") {
+  const beeGifs = [
+    "https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif",
+    "https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif",
+    "https://media.giphy.com/media/26BRzozg4TCBXv6QU/giphy.gif"
+  ];
+
+  const randomGif = beeGifs[Math.floor(Math.random() * beeGifs.length)];
+
+  const gifEmbed = new EmbedBuilder()
+    .setColor(0xffc107)
+    .setTitle("🐝 Buzz!")
+    .setImage(randomGif)
+    .setFooter({ text: "Feel the buzz!" });
+
+  message.channel.send({ embeds: [gifEmbed] });
 }
 
 });
