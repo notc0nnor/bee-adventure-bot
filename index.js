@@ -536,7 +536,7 @@ if (message.content === "!buzz") {
   message.channel.send({ embeds: [gifEmbed] });
 }
 
-}
+})
 
 // --!buzz--
 if (message.content === "!buzz") {
