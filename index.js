@@ -45,6 +45,7 @@ const {
   ButtonStyle,
   EmbedBuilder,
   ChannelType,
+  ComponentType,
 } = require('discord.js');
 
 const Bee = require('./models/Bee');
@@ -612,7 +613,7 @@ client.on("messageCreate", async (message) => {
     // Button interaction collector
     const collector = embedMessage.createMessageComponentCollector({
       componentType: ComponentType.Button,
-      time: 60000 // 1 minute
+      time: 300000 // 5 minutes
     });
 
     collector.on("collect", async (i) => {
