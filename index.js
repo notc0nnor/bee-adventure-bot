@@ -507,8 +507,6 @@ if (foundFlower) {
 
 const fs = require("fs");
 const beeFacts = JSON.parse(fs.readFileSync("./beeFacts.json", "utf8"));
-  
-const { EmbedBuilder } = require("discord.js");
 
 // Inside your messageCreate event
 if (message.content === "!fact") {
