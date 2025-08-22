@@ -596,12 +596,12 @@ client.on("messageCreate", async (message) => {
       components: [
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
-            .setCustomId("prev")
+            .setCustomId(`prev_${message.id}`)
             .setLabel("⬅️ Prev")
             .setStyle(ButtonStyle.Primary)
             .setDisabled(page === 0),
           new ButtonBuilder()
-            .setCustomId("next")
+            .setCustomId(`next_${message.id}`)
             .setLabel("Next ➡️")
             .setStyle(ButtonStyle.Primary)
             .setDisabled((page + 1) * ITEMS_PER_PAGE >= inventories.length)
