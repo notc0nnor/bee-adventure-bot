@@ -29,7 +29,7 @@ app.listen(PORT, () => {
 });
 
 // Bot ready event
-client.once('ready', () => {
+client.once('clientReady', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
