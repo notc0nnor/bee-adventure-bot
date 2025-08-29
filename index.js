@@ -546,7 +546,7 @@ if (message.content === "!buzz") {
 "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3a2w5cjA0YjRtYmJkZW55OG9kYnVodGsyZTFyaHJtc3R5aDU5aTZ6aiZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Y1etfkj6wlX7Y317yG/giphy.gif",
 "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3aGZqNXN0YjNzbnZ2eHc3bXJpbDdqZXI5aDZodjV2dDVnNThnaTRlcSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/odtdjZgbgDqMg/giphy.gif",
 "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3M2ZqZjZzeGxlZ3RxZ2UwODl0eGZ4aHVjNjRuanJ0ODluaThlanY3MCZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/3ohze39XQDWely1GTe/giphy.gif",
-"https://tenor.com/de/view/bee-rizz-bee-eyebrow-bee-kiss-gif-13467304041985061911",
+"https://tenor.com/view/bee-rizz-bee-eyebrow-bee-kiss-gif-13467304041985061911",
     "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3OWV2OWloN2ppbTBsMmJidmx1ODJzYWVoOWZxYmwzdHozYWQ4OXB0eSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Bpbh7Xxubh3gW2PG8K/giphy.gif",
     "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eXkxajV4eGRyM3dqanY4Yjhmb3Fmb3BjMTljNGV0emhsc2p4MDVhZCZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Upe3WPqlWutaFRyhgY/giphy.gif",
     "https://media.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3eDkwNjJseHBsOW1yYWx5Mmc2b3Z0MGZvbGJ3dnV6d2xlOGd5ZXNidSZlcD12MV9naWZzX3JlbGF0ZWQmY3Q9Zw/l3fQ8wxtqxSH0PTJS/giphy.gif",
