@@ -407,7 +407,70 @@ if (command === '!give' && args[1] === 'coins') {
         `**To:** <@${recipientId}>`,
         ``,
         `**<@${senderId}>'s Coins:** ${senderPrev} → ${senderInv.coins}`,
-        `**<@${recipientId}> Coins:** ${recipientPrev} → ${recipientInv.coins}`
+        `**<@${recipientId}>'s Coins:** ${recipientPrev} → ${recipientInv.coins}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
+
+//---!give flowers---
+if (command === '!give' && args[1] === 'flowers') {
+  const amount = parseInt(args[2], 10);
+  const target = message.mentions.users.first();
+
+  if (isNaN(amount) || !target) {
+    return message.reply('Usage: `!give flowers [amount] @user`');
+  }
+
+  if (amount <= 0) {
+    return message.reply('Please enter a positive number of flowers to give.');
+  }
+
+  if (target.id === message.author.id) {
+    return message.reply("You can't give flowers to yourself!");
+  }
+
+  const senderId = message.author.id;
+  const recipientId = target.id;
+
+  // Fetch or create inventories
+  let senderInv = await Inventory.findOne({ userId: senderId });
+  if (!senderInv) senderInv = new Inventory({ userId: senderId });
+
+  if (senderInv.flowers < amount) {
+    return message.reply("You don't have enough flowers to give!");
+  }
+
+  let recipientInv = await Inventory.findOne({ userId: recipientId });
+  if (!recipientInv) recipientInv = new Inventory({ userId: recipientId });
+
+  const senderPrev = senderInv.flowers;
+  const recipientPrev = recipientInv.flowers;
+
+  // Perform transfer
+  senderInv.flowers -= amount;
+  recipientInv.flowers += amount;
+
+  await senderInv.save();
+  await recipientInv.save();
+
+  // Confirm in chat
+  await message.reply(`You gave **${amount}** 🌸 to ${target.username}.`);
+
+  // Log transaction
+  const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+  inventoryLogChannel.send({
+    embeds: [{
+      color: 0xca61ff,
+      title: 'Inventory Change - Transfer',
+      description: [
+        `**Transfer:** ${amount} 🌸`,
+        `**From:** <@${senderId}>`,
+        `**To:** <@${recipientId}>`,
+        ``,
+        `**<@${senderId}>'s Flowers:** ${senderPrev} → ${senderInv.flowers}`,
+        `**<@${recipientId}>'s Flowers:** ${recipientPrev} → ${recipientInv.flowers}`
       ].join('\n'),
       timestamp: new Date(),
     }],
