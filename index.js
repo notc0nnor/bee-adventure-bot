@@ -352,6 +352,69 @@ if (command === '!remove' && args[1] === 'coins') {
   });
 }
   
+//---!give coins---
+if (command === '!give' && args[1] === 'coins') {
+  const amount = parseInt(args[2], 10);
+  const target = message.mentions.users.first();
+
+  if (isNaN(amount) || !target) {
+    return message.reply('Usage: `!give coins [amount] @user`');
+  }
+
+  if (amount <= 0) {
+    return message.reply('Please enter a positive number of coins to give.');
+  }
+
+  if (target.id === message.author.id) {
+    return message.reply("You can't give coins to yourself!");
+  }
+
+  const senderId = message.author.id;
+  const recipientId = target.id;
+
+  let senderInv = await Inventory.findOne({ userId: senderId });
+  if (!senderInv) senderInv = new Inventory({ userId: senderId });
+
+  if (senderInv.coins < amount) {
+    return message.reply("You don't have enough coins to give!");
+  }
+
+  let recipientInv = await Inventory.findOne({ userId: recipientId });
+  if (!recipientInv) recipientInv = new Inventory({ userId: recipientId });
+
+  const senderPrev = senderInv.coins;
+  const recipientPrev = recipientInv.coins;
+
+  // Perform transfer
+  senderInv.coins -= amount;
+  recipientInv.coins += amount;
+
+  await senderInv.save();
+  await recipientInv.save();
+
+  // Confirm in chat
+  await message.reply(`You gave **${amount}** 🪙 to <@${recipientId}>.`);
+
+  // Log transaction (same inventory log channel you use in !add)
+  const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+  inventoryLogChannel.send({
+    embeds: [{
+      color: 0xc9ff19,
+      title: 'Inventory Change - Transfer',
+      description: [
+        `**Transfer:** ${amount} 🪙`,
+        `**From:** <@${senderId}>`,
+        `**To:** <@${recipientId}>`,
+        ``,
+        `**<@${senderId}>'s Coins:** ${senderPrev} → ${senderInv.coins}`,
+        `**<@${recipientId}> Coins:** ${recipientPrev} → ${recipientInv.coins}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
+
+  
 //---!remove flowers---
   if (command === '!remove' && args[1] === 'flowers') {
   if (message.author.id !== ADMIN_ID) {
