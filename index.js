@@ -251,7 +251,7 @@ if (command === '!add' && args[1] === 'coins') {
   inventory.coins += amount;
   await inventory.save();
 
-  message.reply(`Added ${amount} 🪙 to ${target.username}'s inventory.`);
+  message.reply(`Added ${amount} 🪙 to ${user.username}'s inventory.`);
 
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
   inventoryLogChannel.send({
