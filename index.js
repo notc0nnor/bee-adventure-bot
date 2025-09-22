@@ -493,19 +493,19 @@ if (command === '!give' && args[1] === 'flowers') {
 
   let inventory = await Inventory.findOne({ userId: user.id });
   if (!inventory) {
-    return message.reply(`${target.username} has no inventory.`);
+    return message.reply(`${user.username} has no inventory.`);
   }
 
   const previousFlowers = inventory.flowers;
 
   if (amount > inventory.flowers) {
-    return message.reply(`${target.username} doesn't have that many flowers.`);
+    return message.reply(`${user.username} doesn't have that many flowers.`);
   }
 
   inventory.flowers -= amount;
   await inventory.save();
 
-  message.reply(`Removed ${amount} 🌸 from ${target.username}'s inventory.`);
+  message.reply(`Removed ${amount} 🌸 from ${user.username}'s inventory.`);
 
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
   inventoryLogChannel.send({
