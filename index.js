@@ -290,7 +290,7 @@ if (command === '!add' && args[1] === 'coins') {
   inventory.flowers += amount;
   await inventory.save();
 
-  message.reply(`Added ${amount} 🌸 to ${target.username}'s inventory.`);
+  message.reply(`Added ${amount} 🌸 to ${user.username}'s inventory.`);
 
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
   inventoryLogChannel.send({
@@ -322,19 +322,19 @@ if (command === '!remove' && args[1] === 'coins') {
 
   let inventory = await Inventory.findOne({ userId: user.id });
   if (!inventory) {
-    return message.reply(`${target.username} has no inventory.`);
+    return message.reply(`${user.username} has no inventory.`);
   }
 
   const previousCoins = inventory.coins;
 
   if (amount > inventory.coins) {
-    return message.reply(`${target.username} doesn't have that many coins.`);
+    return message.reply(`${user.username} doesn't have that many coins.`);
   }
 
   inventory.coins -= amount;
   await inventory.save();
 
-  message.reply(`Removed ${amount} 🪙 from ${target.username}'s inventory.`);
+  message.reply(`Removed ${amount} 🪙 from ${user.username}'s inventory.`);
 
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
   inventoryLogChannel.send({
