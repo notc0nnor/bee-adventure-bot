@@ -831,6 +831,82 @@ client.on("messageCreate", async (message) => {
   }
 });
 
+// SHOP BUTTON HANDLER
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const userId = interaction.user.id;
+  const customId = interaction.customId;
+
+  // Only handle shop buttons
+  if (!customId.startsWith('buy_')) return;
+
+  const itemName = customId.replace('buy_', '').replace(/_/g, ' ');
+
+  // Shop items (same list as in !shop)
+  const shopItems = [
+    { name: 'Nectar', ep: 10, cost: 100, emoji: '<:nectar:1389740460620382288>' },
+    { name: 'Honey', ep: 15, cost: 145, emoji: '<:Honey:1390088067947167885>' },
+    { name: 'Bee Bread', ep: 20, cost: 180, emoji: '<:BeeBread:1390098834192863232>' },
+    { name: 'Gelee Royale', ep: 35, cost: 200, emoji: '<:GeleeRoyale:1390091559302729889>' },
+  ];
+
+  const item = shopItems.find(i => i.name.toLowerCase() === itemName.toLowerCase());
+  if (!item) return interaction.reply({ content: 'Error: Item not found.' });
+
+  // Fetch inventory
+  let inventory = await Inventory.findOne({ userId });
+  if (!inventory) {
+    inventory = new Inventory({ userId });
+    await inventory.save();
+  }
+
+  // Check balance
+  if (inventory.coins < item.cost) {
+    return interaction.reply({ content: `You don't have enough coins to buy **${item.name}** ${item.emoji}!`});
+  }
+
+  // Deduct cost
+  inventory.coins -= item.cost;
+
+  // Add item
+  const existingItem = inventory.items.find(i => i.name === item.name);
+  if (existingItem) {
+    existingItem.quantity = (existingItem.quantity || 1) + 1;
+  } else {
+    inventory.items.push({ name: item.name, ep: item.ep, cost: item.cost, emoji: item.emoji, quantity: 1 });
+  }
+
+  await inventory.save();
+
+  // Log purchase
+const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+
+const previousCoins = inventory.coins + item.cost; // coins before purchase
+
+if (inventoryLogChannel) {
+  inventoryLogChannel.send({
+    embeds: [{
+      color: 0x5050fa,
+      title: 'Inventory Change',
+      description: [
+        `**Purchased:** ${item.emoji} ${item.name}`,
+        `**From:** <@${interaction.user.id}>`,
+        ``,
+        `**Coins:** ${previousCoins} → ${inventory.coins}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
+
+  // Confirm to user
+  await interaction.reply({
+    content: `You purchased **${item.name}** ${item.emoji}  for **${item.cost}** 🪙!`,
+  });
+});
+
+
 // Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
 client.login(TOKEN);
