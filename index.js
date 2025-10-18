@@ -630,6 +630,55 @@ if (foundFlower) {
   }
 }
 
+
+// --!shop--
+if (message.content.startsWith('!shop')) {
+  const userId = message.author.id;
+  let inventory = await Inventory.findOne({ userId });
+  if (!inventory) {
+    inventory = new Inventory({ userId });
+    await inventory.save();
+  }
+
+  // Define shop items
+  const shopItems = [
+    { name: 'Nectar', ep: 10, cost: 100, emoji: '<:nectar:1389740460620382288>' },
+    { name: 'Honey', ep: 15, cost: 145, emoji: '<:Honey:1390088067947167885>' },
+    { name: 'Bee Bread', ep: 20, cost: 180, emoji: '<:BeeBread:1390098834192863232>' },
+    { name: 'Gelee Royale', ep: 35, cost: 200, emoji: '<:GeleeRoyale:1390091559302729889>' },
+  ];
+
+  const shopEmbed = new EmbedBuilder()
+    .setColor(0xffe419)
+    .setTitle('Item Shop')
+    .setDescription('Purchase treats for your Bees to increase their EP!')
+    .addFields(
+      shopItems.map(item => ({
+        name: `${item.name} ${item.emoji}`,
+        value: `**${item.cost}** 🪙 — Gives **${item.ep} EP**`,
+        inline: false
+      }))
+    )
+    .setFooter({ text: 'Apis Equinus' })
+    .setTimestamp();
+
+  const row = new ActionRowBuilder();
+
+  shopItems.forEach(item => {
+    const canAfford = inventory.coins >= item.cost;
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`buy_${item.name.toLowerCase().replace(/\s+/g, '_')}`)
+        .setLabel(`${item.name} (${item.cost} 🪙)`)
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(!canAfford)
+    );
+  });
+
+  await message.reply({ embeds: [shopEmbed], components: [row] });
+}
+
+  
 // --!fact--
 
 const fs = require("fs");
