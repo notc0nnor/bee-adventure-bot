@@ -1,7 +1,7 @@
 // models/Inventory.js
 const mongoose = require('mongoose');
 
-const itemSchema = new mongoose.Schema({
+const ItemSchema = new mongoose.Schema({
   name: { type: String, required: true },     // "Nectar"
   emoji: { type: String, required: true },    // "<:nectar:123...>"
   cost: { type: Number, required: true },     // 100
