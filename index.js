@@ -216,17 +216,25 @@ if (command === '!inventory') {
     await inventory.save();
   }
 
-  return message.reply({
-    embeds: [{
-      color: 0xffe419,
-      title: `${message.author.username}'s Inventory 🐝`,
-      fields: [
-        { name: 'Coins', value: `${inventory.coins} 🪙`, inline: true },
-        { name: 'Flowers', value: `${inventory.flowers} 🌸`, inline: true },
-      ],
-      footer: { text: 'Apis Equinus' },
-      timestamp: new Date(),
-    }]
+ // inside your existing !inventory handler, after you fetch/create `inventory`
+const itemList = (inventory.items && inventory.items.length)
+  ? inventory.items.map(it => `${it.emoji} ${it.name} × ${it.quantity ?? it.qty ?? 0}`).join('\n')
+  : 'No items';
+
+return message.reply({
+  embeds: [{
+    color: 0xffe419,
+    title: `${message.author.username}'s Inventory 🐝`,
+    fields: [
+      { name: 'Coins', value: `${inventory.coins} 🪙`, inline: true },
+      { name: 'Flowers', value: `${inventory.flowers} 🌸`, inline: true },
+      { name: 'Items', value: itemList, inline: false },
+    ],
+    footer: { text: 'Apis Equinus' },
+    timestamp: new Date(),
+  }]
+});
+
   });
 }
 //---!add coins---
