@@ -235,7 +235,6 @@ return message.reply({
   }]
 });
 
-  });
 }
 //---!add coins---
 if (command === '!add' && args[1] === 'coins') {
