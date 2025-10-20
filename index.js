@@ -769,9 +769,6 @@ trackingChannel.send({
     timestamp: new Date(),
   }],
 });
-} catch (err) {
-    console.error('Log channel error:', err);
-  }
 
 // --!fact--
 
