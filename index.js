@@ -685,6 +685,80 @@ if (message.content.startsWith('!shop')) {
   await message.reply({ embeds: [shopEmbed], components: [row] });
 }
 
+// --- !use command ---
+if (command === 'use') {
+  const itemArg = args[0];
+  const beeId = args[1];
+
+  if (!itemArg || !beeId) {
+    return message.reply("Usage: `!use [item name] [bee ID]`");
+  }
+
+  // get the item definition from models/shop.js
+  const { getItemDef, removeItemFromInventory } = require('./utils/shopHelpers');
+  const Bee = require('./models/Bee');
+  const shopItems = require('./models/shop');
+
+  const itemDef = getItemDef(itemArg);
+  if (!itemDef) {
+    return message.reply("Error: That item doesn't exist.");
+  }
+
+  // fetch inventory
+  const Inventory = require('./models/Inventory');
+  const inventory = await Inventory.findOne({ userId: message.author.id });
+  if (!inventory) {
+    return message.reply("Error: You don't have an inventory yet.");
+  }
+
+  // check if the user owns the item
+  const item = inventory.items.find(i => i.key === itemDef.key);
+  if (!item || item.qty < 1) {
+    return message.reply(`You don't have any ${itemDef.name} to use.`);
+  }
+
+  // fetch the bee
+  const BeeModel = require('./models/Bee');
+  const bee = await BeeModel.findOne({ beeId: beeId });
+  if (!bee) {
+    return message.reply(`Bee with ID **${beeId}** not found.`);
+  }
+
+  // verify ownership
+  if (bee.ownerId !== message.author.id) {
+    return message.reply("You don't own this bee.");
+  }
+
+  // apply EP
+  const oldEp = bee.ep;
+  const epGain = itemDef.ep;
+  const newEp = oldEp + epGain;
+  bee.ep = newEp;
+  await bee.save();
+
+  // remove the item from inventory
+  await removeItemFromInventory(message.author.id, itemDef.key, 1);
+
+  // success reply
+  await message.reply(`You used ${itemDef.emoji} **${itemDef.name}** on bee **${beeId}**! (+${epGain} EP)`);
+
+  // log to tracking channel
+  const trackingChannel = await client.channels.fetch('1394792906849652977');
+  trackingChannel.send({
+    embeds: [{
+      color: 0x50fa7b,
+      title: 'Bee Stat Change',
+      description: [
+        `**${message.author.username}** used **${itemDef.name}** on **${bee.beeId}**`,
+        ``,
+        `**Added:** ${epGain} EP`,
+        ``,
+        `**EP:** ${oldEp} → ${newEp}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
 
   
 // --!fact--
