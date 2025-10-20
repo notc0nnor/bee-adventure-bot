@@ -685,7 +685,96 @@ if (message.content.startsWith('!shop')) {
   await message.reply({ embeds: [shopEmbed], components: [row] });
 }
 
-  
+  //--!use --
+
+  // !use [itemName] [beeID]
+if (command === 'use') {
+  const itemName = args[0];
+  const beeId = args[1];
+
+  if (!itemName || !beeId)
+    return message.reply('Usage: `!use [itemName] [beeID]`');
+
+  // Load models
+  const Bee = require('./schemas/Bee');
+  const Inventory = require('./schemas/Inventory');
+
+  const inventory = await Inventory.findOne({ userId: message.author.id });
+  if (!inventory) return message.reply('You have no inventory yet!');
+
+  // Case-insensitive match
+  const item = inventory.items.find(i => i.name.toLowerCase() === itemName.toLowerCase());
+  if (!item || item.qty <= 0)
+    return message.reply(`You don't have any **${itemName}** to use!`);
+
+  const bee = await Bee.findOne({ beeId, ownerId: message.author.id });
+  if (!bee) return message.reply(`No bee found with ID \`${beeId}\` that you own.`);
+
+  // Define EP reward by item name
+  let epGain = 0;
+switch (item.name.toLowerCase()) {
+  case 'nectar':
+    epGain = 10;
+    break;
+  case 'honey':
+    epGain = 15;
+    break;
+  case 'bee bread':
+    epGain = 20;
+    break;
+  case 'gelee royale':
+    epGain = 35;
+    break;
+  default:
+    epGain = 0; // fallback if unknown item
+}
+
+  // Apply effects
+  item.qty -= 1;
+  bee.ep += epGain;
+
+  await inventory.save();
+  await bee.save();
+
+  // Confirmation to user
+  await message.reply({
+    embeds: [{
+      color: 0x8ef5a3,
+      title: 'Item Used!',
+      description: [
+        `Used **${item.emoji} ${item.name}** on **${bee.beeId}**!`,
+        `+${epGain} EP gained `,
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+
+const oldEp = bee.ep - epGain;           // store the current EP before the change
+const newEp = bee.ep;   // calculate the updated EP
+
+await bee.save();
+
+const trackingChannel = await client.channels.fetch('1394792906849652977');
+trackingChannel.send({
+  embeds: [{
+    color: 0x50fa7b,
+    title: 'Bee Stat Change',
+    description: [
+      `**${message.author.username}** used **${item.name}** on **${bee.beeId}**`,
+      ``,
+      `**Added:** ${epGain} EP`,
+      ``,
+      `**EP:** ${oldEp} → ${newEp}`
+    ].join('\n'),
+    timestamp: new Date(),
+  }],
+});
+
+  catch (err) {
+    console.error('Log channel error:', err);
+  }
+}
+
 // --!fact--
 
 const fs = require("fs");
