@@ -770,7 +770,6 @@ trackingChannel.send({
   }],
 });
 
-  catch (err) {
     console.error('Log channel error:', err);
   }
 }
