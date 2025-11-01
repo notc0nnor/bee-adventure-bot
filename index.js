@@ -530,7 +530,7 @@ if (command === '!give' && args[1] === 'flowers') {
   });
 }
   // --- !use command ---
-if (command === 'use') {
+if (command === '!use') {
   const itemArg = args[0];
   const beeId = args[1];
 
