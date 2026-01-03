@@ -1,5 +1,3 @@
-console.log("ENTRY FILE REACHED");
-
 require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require("express");
@@ -30,12 +28,7 @@ app.listen(PORT, () => {
   console.log(`🌐 Keep-alive server listening on port ${PORT}`);
 });
 
-console.log("ABOUT TO LOGIN");
 // Log in bot
-const TOKEN = process.env.DISCORD_TOKEN;
-client.login(TOKEN);
-console.log("LOGIN CALLED");
-
 client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
@@ -992,5 +985,6 @@ if (inventoryLogChannel) {
   });
 });
 
-
+const TOKEN = process.env.DISCORD_TOKEN;
+client.login(TOKEN);
 
