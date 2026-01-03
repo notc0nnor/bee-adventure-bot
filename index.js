@@ -1,3 +1,4 @@
+// 1️⃣ WebSocket test
 const WebSocket = require("ws");
 
 console.log("🔎 Testing raw Discord gateway connection…");
@@ -11,11 +12,20 @@ ws.on("open", () => {
 ws.on("error", (err) => {
   console.error("❌ WebSocket error:", err);
 });
+// 2️⃣ dotenv
+require("dotenv").config();
+// 3️⃣ discord.js import (THIS is what you're missing)
+const { Client, GatewayIntentBits } = require("discord.js");
 
-// Create bot client
+// 4️⃣ client creation
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
 });
+
 
 // Connect to MongoDB
   mongoose.connect(process.env.MONGO_URI, {
