@@ -1,3 +1,5 @@
+console.log("Node version:", process.version);
+
 require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require("express");
