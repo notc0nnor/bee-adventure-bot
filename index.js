@@ -1,4 +1,6 @@
-import WebSocket from "ws";
+const WebSocket = require("ws");
+
+console.log("🔎 Testing raw Discord gateway connection…");
 
 const ws = new WebSocket("wss://gateway.discord.gg/?v=10&encoding=json");
 
@@ -9,11 +11,6 @@ ws.on("open", () => {
 ws.on("error", (err) => {
   console.error("❌ WebSocket error:", err);
 });
-
-require('dotenv').config();
-const mongoose = require('mongoose');
-const express = require("express");
-const { Client, GatewayIntentBits } = require('discord.js');
 
 // Create bot client
 const client = new Client({
