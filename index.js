@@ -1,4 +1,4 @@
-console.log("Node version:", process.version);
+console.log("ENTRY FILE REACHED");
 
 require('dotenv').config();
 const mongoose = require('mongoose');
@@ -10,13 +10,13 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
-// Connect to MongoDB
-// mongoose.connect(process.env.MONGO_URI, {
-  // useNewUrlParser: true,
- // useUnifiedTopology: true,
-// })
-// .then(() => console.log('✅ Connected to MongoDB!'))
-// .catch((err) => console.error('❌ MongoDB connection error:', err));
+Connect to MongoDB
+  mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+ })
+ .then(() => console.log('✅ Connected to MongoDB!'))
+ .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // Express keep-alive
 const app = express();
@@ -30,13 +30,17 @@ app.listen(PORT, () => {
   console.log(`🌐 Keep-alive server listening on port ${PORT}`);
 });
 
-// Bot ready event
-client.once('clientReady', () => {
+console.log("ABOUT TO LOGIN");
+// Log in bot
+const TOKEN = process.env.DISCORD_TOKEN;
+client.login(TOKEN);
+console.log("LOGIN CALLED");
+
+client.once('ready', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
 // EP level helper
-
 const { getLevel, getLevelThreshold } = require("./levelUtils");
 const fs = require("fs");
 const beeFacts = JSON.parse(fs.readFileSync("./beeFacts.json", "utf8"));
@@ -989,7 +993,4 @@ if (inventoryLogChannel) {
 });
 
 
-// Log in bot
-const TOKEN = process.env.DISCORD_TOKEN;
-client.login(TOKEN);
 
