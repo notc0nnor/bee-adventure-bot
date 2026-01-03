@@ -1,4 +1,3 @@
-// 1️⃣ WebSocket test
 const WebSocket = require("ws");
 
 console.log("🔎 Testing raw Discord gateway connection…");
@@ -12,28 +11,24 @@ ws.on("open", () => {
 ws.on("error", (err) => {
   console.error("❌ WebSocket error:", err);
 });
-// 2️⃣ dotenv
-require("dotenv").config();
-// 3️⃣ discord.js import (THIS is what you're missing)
-const { Client, GatewayIntentBits } = require("discord.js");
 
-// 4️⃣ client creation
+require('dotenv').config();
+const mongoose = require('mongoose');
+const express = require("express");
+const { Client, GatewayIntentBits } = require('discord.js');
+
+// Create bot client
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-  ],
+  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
 });
 
-
 // Connect to MongoDB
-  mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
- })
- .then(() => console.log('✅ Connected to MongoDB!'))
- .catch((err) => console.error('❌ MongoDB connection error:', err));
+})
+.then(() => console.log('✅ Connected to MongoDB!'))
+.catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // Express keep-alive
 const app = express();
@@ -47,12 +42,13 @@ app.listen(PORT, () => {
   console.log(`🌐 Keep-alive server listening on port ${PORT}`);
 });
 
-// Log in bot
-client.once('ready', () => {
+// Bot ready event
+client.once('clientReady', () => {
   console.log(`🐝 Logged in as ${client.user.tag}`);
 });
 
 // EP level helper
+
 const { getLevel, getLevelThreshold } = require("./levelUtils");
 const fs = require("fs");
 const beeFacts = JSON.parse(fs.readFileSync("./beeFacts.json", "utf8"));
@@ -1004,6 +1000,7 @@ if (inventoryLogChannel) {
   });
 });
 
+
+// Log in bot
 const TOKEN = process.env.DISCORD_TOKEN;
 client.login(TOKEN);
-
