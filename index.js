@@ -15,6 +15,14 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => console.log('✅ Connected to MongoDB!'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
+const migrateInventoryKeys = require('./scripts/fixInventoryKeys');
+
+mongoose.connection.once('open', async () => {
+  console.log('✅ MongoDB connected');
+
+  await migrateInventoryKeys();
+});
+
 
 // Express keep-alive
 const app = express();
