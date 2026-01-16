@@ -2,11 +2,12 @@
 const mongoose = require('mongoose');
 
 const ItemSchema = new mongoose.Schema({
+  key: { type: String, required: true },
   name: { type: String, required: true },     // "Nectar"
   emoji: { type: String, required: true },    // "<:nectar:123...>"
   cost: { type: Number, required: true },     // 100
   ep: { type: Number, required: true },       // 10
-  quantity: { type: Number, default: 1 },     // how many the user owns
+  qty: { type: Number, default: 1 },     // how many the user owns
 }, { _id: false });
 
 const inventorySchema = new mongoose.Schema({
