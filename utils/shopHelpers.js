@@ -25,7 +25,7 @@ function getItemDef(keyOrName) {
 async function addItemToInventory(userId, itemKey, amount = 1, session = null) {
   const inv = await Inventory.findOne({ userId }).session(session);
   if (!inv) throw new Error('Inventory not found');
-  const existing = inv.items.find(i => i.name === itemDef.name);
+  const existing = inv.items.find(i => i.key === itemKey);
   const itemDef = shopItems[itemKey];
   if (!itemDef) throw new Error('Invalid itemKey');
   if (existing) existing.qty += amount;
@@ -37,7 +37,7 @@ async function addItemToInventory(userId, itemKey, amount = 1, session = null) {
 async function removeItemFromInventory(userId, itemKey, amount = 1, session = null) {
   const inv = await Inventory.findOne({ userId }).session(session);
   if (!inv) throw new Error('Inventory not found');
-  const existing = inv.items.find(i => i.name === itemKey || i.name.toLowerCase() === itemKey.toLowerCase());
+  const existing = inv.items.find(i => i.key === itemKey);
   if (!existing || existing.qty < amount) return false;
   existing.qty -= amount;
   if (existing.qty <= 0) inv.items = inv.items.filter(i => i.key !== itemKey);
@@ -72,7 +72,7 @@ async function purchaseItemAtomic(userId, itemKey, qty = 1) {
     }
 
     inv.coins -= totalCost;
-    const existing = inv.items.find(i => i.name === itemDef.name);
+    const existing = inv.items.find(i => i.key === itemKey);
     if (existing) existing.qty += qty;
     else inv.items.push({ key: itemDef.key, name: itemDef.name, emoji: itemDef.emoji, qty });
 
@@ -85,12 +85,6 @@ async function purchaseItemAtomic(userId, itemKey, qty = 1) {
     session.endSession();
     throw err;
   }
-  inv.items.push({
-  name: itemDef.name,
-  emoji: itemDef.emoji,
-  qty
-});
-
 }
 
 module.exports = {
