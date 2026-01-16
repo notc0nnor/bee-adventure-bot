@@ -15,14 +15,6 @@ mongoose.connect(process.env.MONGO_URI, {
 })
 .then(() => console.log('✅ Connected to MongoDB!'))
 .catch((err) => console.error('❌ MongoDB connection error:', err));
-const migrateInventoryKeys = require('./scripts/fixInventoryKeys');
-
-mongoose.connection.once('open', async () => {
-  console.log('✅ MongoDB connected');
-
-  await migrateInventoryKeys();
-});
-
 
 // Express keep-alive
 const app = express();
@@ -226,9 +218,7 @@ if (command === '!inventory') {
 
  // inside your existing !inventory handler, after you fetch/create `inventory`
 const itemList = (inventory.items && inventory.items.length)
-  ? inventory.items.map(it =>
-  `${it.emoji} ${it.name} × ${it.qty}`
-).join('\n')
+  ? inventory.items.map(it => `${it.emoji} ${it.name} × ${it.quantity ?? it.qty ?? 0}`).join('\n')
   : 'No items';
 
 return message.reply({
@@ -541,9 +531,8 @@ if (command === '!give' && args[1] === 'flowers') {
 }
   // --- !use command ---
 if (command === '!use') {
-  const itemArg = args[1];
-  const beeId = args[2];
-
+  const itemArg = args[0];
+  const beeId = args[1];
 
   if (!itemArg || !beeId) {
     return message.reply("Usage: `!use [item name] [bee ID]`");
