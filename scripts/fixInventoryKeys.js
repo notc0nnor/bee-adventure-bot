@@ -1,12 +1,15 @@
-// scripts/fixInventoryKeys.js
-const mongoose = require('mongoose');
 const Inventory = require('../models/Inventory');
 const shopItems = require('../models/shop');
 
-(async () => {
-  await mongoose.connect(process.env.MONGO_URI);
+async function migrateInventoryKeys() {
+  const inventories = await Inventory.find({ 'items.key': { $exists: false } });
 
-  const inventories = await Inventory.find();
+  if (!inventories.length) {
+    console.log('✅ Inventory migration: no missing keys');
+    return;
+  }
+
+  console.log(`🔧 Migrating ${inventories.length} inventories`);
 
   for (const inv of inventories) {
     let changed = false;
@@ -25,10 +28,9 @@ const shopItems = require('../models/shop');
 
     if (changed) {
       await inv.save();
-      console.log(`Fixed inventory for user ${inv.userId}`);
+      console.log(`✔ Fixed inventory for user ${inv.userId}`);
     }
   }
+}
 
-  console.log('Done');
-  process.exit(0);
-})();
+module.exports = migrateInventoryKeys;
