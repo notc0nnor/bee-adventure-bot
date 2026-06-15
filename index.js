@@ -588,8 +588,6 @@ inventoryLogChannel.send({
   );
 }
   // -- !shop 
-  Can you help me improve the shop display? i dont want to break any code. This is the current code:
-
   if (command === '!shop') {
   return message.reply({
     embeds: [{
