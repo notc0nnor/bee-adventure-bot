@@ -431,21 +431,10 @@ await inventory.save();
     });
   }
 
-  await inventory.save();
+    await inventory.save();
 
-  return message.reply({
-    embeds: [{
-      color: 0xffe419,
-      title: 'Purchase Successful 🐝',
-      description:
-        `${itemData.emoji} Bought **${amount} ${itemData.name}**\n` +
-        `Cost: **${totalCost} 🪙**\n` +
-        `Remaining Coins: **${inventory.coins} 🪙**`,
-      timestamp: new Date(),
-    }],
-  });
-    const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
-
+      const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+    
 inventoryLogChannel.send({
   embeds: [{
     color: 0xffe419,
@@ -461,6 +450,18 @@ inventoryLogChannel.send({
     timestamp: new Date(),
   }],
 });
+  return message.reply({
+    embeds: [{
+      color: 0xffe419,
+      title: 'Purchase Successful 🐝',
+      description:
+        `${itemData.emoji} Bought **${amount} ${itemData.name}**\n` +
+        `Cost: **${totalCost} 🪙**\n` +
+        `Remaining Coins: **${inventory.coins} 🪙**`,
+      timestamp: new Date(),
+    }],
+  });
+
 }
   
   // -- !add items
