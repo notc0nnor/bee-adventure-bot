@@ -811,79 +811,129 @@ if (command === '!give' && args[1] === 'flowers') {
 }
   // --- !use command ---
 if (command === '!use') {
-  const itemArg = args[0];
-  const beeId = args[1];
+  const itemNumber = parseInt(args[1], 10);
+  const amount = parseInt(args[2], 10);
+  const beeId = args[3];
 
-  if (!itemArg || !beeId) {
-    return message.reply("Usage: `!use [item name] [bee ID]`");
+  if (
+    isNaN(itemNumber) ||
+    isNaN(amount) ||
+    amount <= 0 ||
+    !beeId ||
+    !SHOP_ITEMS[itemNumber]
+  ) {
+    return message.reply(
+      'Usage: `!use [item number] [amount] [bee id]`'
+    );
   }
 
-  // get the item definition from models/shop.js
-  const { getItemDef, removeItemFromInventory } = require('./utils/shopHelpers');
-  const Bee = require('./models/Bee');
-  const shopItems = require('./models/shop');
+  const itemData = SHOP_ITEMS[itemNumber];
 
-  const itemDef = getItemDef(itemArg);
-  if (!itemDef) {
-    return message.reply("Error: That item doesn't exist.");
-  }
+  let inventory = await Inventory.findOne({
+    userId: message.author.id
+  });
 
-  // fetch inventory
-  const Inventory = require('./models/Inventory');
-  const inventory = await Inventory.findOne({ userId: message.author.id });
   if (!inventory) {
-    return message.reply("Error: You don't have an inventory yet.");
+    return message.reply('You have no inventory.');
   }
 
-  // check if the user owns the item
-  const item = inventory.items.find(i => i.key === itemDef.key);
-  if (!item || item.qty < 1) {
-    return message.reply(`You don't have any ${itemDef.name} to use.`);
+  const inventoryItem = inventory.items.find(
+    item => item.name === itemData.name
+  );
+
+  if (!inventoryItem) {
+    return message.reply(
+      `You do not own any ${itemData.name}.`
+    );
   }
 
-  // fetch the bee
-  const BeeModel = require('./models/Bee');
-  const bee = await BeeModel.findOne({ beeId: beeId });
+  if (inventoryItem.quantity < amount) {
+    return message.reply(
+      `You only have ${inventoryItem.quantity} ${itemData.name}.`
+    );
+  }
+
+  const bee = await Bee.findOne({ beeId });
+
   if (!bee) {
-    return message.reply(`Bee with ID **${beeId}** not found.`);
+    return message.reply(
+      `Bee ID "${beeId}" does not exist.`
+    );
   }
 
-  // verify ownership
   if (bee.ownerId !== message.author.id) {
-    return message.reply("You don't own this bee.");
+    return message.reply(
+      'You can only use items on your own bees.'
+    );
   }
 
-  // apply EP
-  const oldEp = bee.ep;
-  const epGain = itemDef.ep;
-  const newEp = oldEp + epGain;
-  bee.ep = newEp;
+  const previousEP = bee.ep;
+
+  const epGain = itemData.ep * amount;
+
+  bee.ep += epGain;
+
+  inventoryItem.quantity -= amount;
+
+  if (inventoryItem.quantity <= 0) {
+    inventory.items = inventory.items.filter(
+      item => item.name !== itemData.name
+    );
+  }
+
+  await inventory.save();
   await bee.save();
 
-  // remove the item from inventory
-  await removeItemFromInventory(message.author.id, itemDef.key, 1);
+  const prevLevelInfo = getLevel(previousEP);
+const newLevelInfo = getLevel(bee.ep);
+  
+  await inventory.save();
+await bee.save();
+  const trackChannel = await client.channels.fetch('1394792906849652977');
 
-  // success reply
-  await message.reply(`You used ${itemDef.emoji} **${itemDef.name}** on bee **${beeId}**! (+${epGain} EP)`);
-
-  // log to tracking channel
-  const trackingChannel = await client.channels.fetch('1394792906849652977');
-  trackingChannel.send({
+trackChannel.send({
+  embeds: [{
+    title: 'Bee Stat Change',
+    color: 0x8140d6,
+    description: [
+      `Added: **${epGain} EP**`,
+      `To: \`${bee.beeId}\``,
+      `Reason: Item Use`,
+      ``,
+      `Item: ${itemData.emoji} ${itemData.name}`,
+      `Quantity: ${amount}`,
+      ``,
+      `**EP**: ${previousEP} → ${bee.ep}`
+    ].join('\n'),
+    timestamp: new Date(),
+  }]
+});
+  if (newLevelInfo.level > prevLevelInfo.level) {
+  trackChannel.send({
+    content: `<@${bee.ownerId}>`,
     embeds: [{
-      color: 0x50fa7b,
-      title: 'Bee Stat Change',
-      description: [
-        `**${message.author.username}** used **${itemDef.name}** on **${bee.beeId}**`,
-        ``,
-        `**Added:** ${epGain} EP`,
-        ``,
-        `**EP:** ${oldEp} → ${newEp}`
-      ].join('\n'),
+      title: `Bee ${bee.beeId} has leveled up!`,
+      color: 0xffe419,
+      description:
+        `Your bee \`${bee.beeId}\` leveled up!\n` +
+        `**${prevLevelInfo.name}** → **${newLevelInfo.name}**`,
+      timestamp: new Date(),
+    }]
+  });
+}
+  return message.reply({
+    embeds: [{
+      color: 0xffe419,
+      title: 'Item Used 🐝',
+      description:
+        `${itemData.emoji} Used **${amount} ${itemData.name}** on Bee **${beeId}**\n` +
+        `✨ Gained **${epGain} EP**\n` +
+        `📈 EP: **${previousEP} → ${bee.ep}**` +
+        levelUpText,
       timestamp: new Date(),
     }],
   });
 }
-
 if (command === '!work') {
   const WORK_CHANNEL_ID = '1390013455305801748';
   const LOG_CHANNEL_ID = '1394414785130532976';
