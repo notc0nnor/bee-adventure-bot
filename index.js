@@ -87,9 +87,65 @@ const SHOP_ITEMS = {
     ep: 0,
   },
   6: {
-    name: 'Magic Strawberry',
+    name: 'Strawberry',
     emoji: '<:magic_strawberry:1402026047825776763>',
     cost: 1500,
+    type: 'collectible',
+    ep: 0,
+  },
+  7: {
+    name: 'Dandelion',
+    emoji: '<:magic_dandelion:1402026106428850247>',
+    cost: 1500,
+    type: 'collectible',
+    ep: 0,
+  },
+  8: {
+    name: 'Pinkfruit',
+    emoji: '<:magic_pinkfruit:1402026155430776862>',
+    cost: 1500,
+    type: 'collectible',
+    ep: 0,
+  },
+  9: {
+    name: 'Rainbow Lotus',
+    emoji: '<:rainbow_lotus:1402026203031801946>',
+    cost: 1500,
+    type: 'collectible',
+    ep: 0,
+  },
+  10: {
+    name: 'Starfruit',
+    emoji: '<:starfruit:1402026228025790624>',
+    cost: 1500,
+    type: 'collectible',
+    ep: 0,
+  },
+  11: {
+    name: 'Heartfruit',
+    emoji: '<:heartfruit:1402026245457444994>',
+    cost: 1500,
+    type: 'collectible',
+    ep: 0,
+  },
+  12: {
+    name: 'Common Custom Token',
+    emoji: '<:commontoken:1516134237672050828>',
+    cost: 10000,
+    type: 'collectible',
+    ep: 0,
+  },
+  13: {
+    name: 'Uncommon Custom Token',
+    emoji: '<:uncommontoken:1516134304776847552>',
+    cost: 13000,
+    type: 'collectible',
+    ep: 0,
+  },
+  14: {
+    name: 'Rare Custom Token',
+    emoji: '<:raretoken:1516134343066652682>',
+    cost: 15000,
     type: 'collectible',
     ep: 0,
   },
@@ -444,7 +500,7 @@ await inventory.save();
   await inventory.save();
 
   const flowerEmbed = new EmbedBuilder()
-    .setColor(0xffade8)
+    .setColor(0xbc87c9)
     .setTitle('Inventory Change')
     .setDescription([
       `**Added:** ${amount} 🌸`,
@@ -480,7 +536,7 @@ await inventory.save();
     
 inventoryLogChannel.send({
   embeds: [{
-    color: 0xffe419,
+    color: 0x73bd76,
     title: 'Item Purchase',
     description: [
       `**Buyer:** <@${message.author.id}>`,
@@ -633,6 +689,14 @@ inventoryLogChannel.send({
         '**4** • <:GeleeRoyale:1390091559302729889> Gelee Royale — 300 🪙',
         '**5** • 🌸 Flower — 2500 🪙',
         '**6** • <:magic_strawberry:1402026047825776763> Magic Strawberry — 1500 🪙',
+        '**7** • <:magic_dandelion:1402026106428850247> Magic Dandelion — 1500 🪙',
+        '**8** • <:magic_pinkfruit:1402026155430776862> Magic Pinkfruit — 1500 🪙',
+        '**9** • <:rainbow_lotus:1402026203031801946> Rainbow Lotus — 1500 🪙',
+        '**10** • <:starfruit:1402026228025790624> Starfruit — 1500 🪙',
+        '**11** • <:heartfruit:1402026245457444994> Heartfruit – 1500🪙',
+        '**12** • <:commontoken:1516134237672050828> Common Custom – 10000🪙',
+        '**13** • <:uncommontoken:1516134304776847552> Uncommon Custom – 13000🪙',
+        '**14** • <:raretoken:1516134343066652682> Rare Custom – 15000🪙',
         '',
         '`!buy [item number] [amount]`'
       ].join('\n'),
