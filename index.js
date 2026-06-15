@@ -59,13 +59,13 @@ const SHOP_ITEMS = {
   },
   2: {
     name: 'Honey',
-    emoji: '<:Honey:1390088067947167885',
+    emoji: '<:Honey:1390088067947167885>',
     cost: 175,
     ep: 15,
   },
   3: {
     name: 'Bee Bread',
-    emoji: ':BeeBread:1390098834192863232',
+    emoji: '<:BeeBread:1390098834192863232>',
     cost: 200,
     ep: 20,
   },
