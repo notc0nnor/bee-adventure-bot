@@ -619,7 +619,7 @@ inventoryLogChannel.send({
     }
   ]
 }],
-  }];
+  }],
   });
 }
 
