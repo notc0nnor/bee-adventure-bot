@@ -928,8 +928,7 @@ trackChannel.send({
       description:
         `${itemData.emoji} Used **${amount} ${itemData.name}** on Bee **${beeId}**\n` +
         `✨ Gained **${epGain} EP**\n` +
-        `📈 EP: **${previousEP} → ${bee.ep}**` +
-        levelUpText,
+        `📈 EP: **${previousEP} → ${bee.ep}**`,
       timestamp: new Date(),
     }],
   });
