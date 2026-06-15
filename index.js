@@ -80,6 +80,13 @@ const SHOP_ITEMS = {
     ep: 35,
   },
   5: {
+    name: 'Flower',
+    emoji: '🌸',
+    cost: 2500,
+    type: 'flowers',
+    ep: 0,
+  },
+  6: {
     name: 'Magic Strawberry',
     emoji: '<:magic_strawberry:1402026047825776763>',
     cost: 1500,
@@ -395,7 +402,7 @@ if (command === '!add' && args[1] === 'coins') {
 
   if (!SHOP_ITEMS[itemNumber]) {
     return message.reply(
-      'Usage: `!buy [1-4] [amount]`\n' +
+      'Usage: `!buy [item number] [amount]`\n' +
       '1 = Nectar\n' +
       '2 = Honey\n' +
       '3 = Bee Bread\n' +
@@ -423,9 +430,13 @@ if (command === '!add' && args[1] === 'coins') {
     );
   }
 const previousCoins = inventory.coins;
-  inventory.coins -= totalCost;
+  
+    inventory.coins -= totalCost;
 await inventory.save();
     
+ if (itemData.type === 'flowers') {
+  inventory.flowers += amount;
+} else {
   const existingItem = inventory.items.find(
     item => item.name === itemData.name
   );
@@ -441,7 +452,7 @@ await inventory.save();
       quantity: amount,
     });
   }
-
+}
     await inventory.save();
 
       const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
@@ -493,7 +504,7 @@ inventoryLogChannel.send({
     !SHOP_ITEMS[itemNumber]
   ) {
     return message.reply(
-      'Usage: `!add items [1-4] [amount] @user`'
+      'Usage: `!add items [item number] [amount] @user`'
     );
   }
 
@@ -545,7 +556,7 @@ inventoryLogChannel.send({
     !SHOP_ITEMS[itemNumber]
   ) {
     return message.reply(
-      'Usage: `!remove items [1-4] [amount] @user`'
+      'Usage: `!remove items [item number] [amount] @user`'
     );
   }
 
@@ -598,7 +609,8 @@ inventoryLogChannel.send({
         '**2** • <:Honey:1390088067947167885> Honey — 175 🪙',
         '**3** • <:BeeBread:1390098834192863232> Bee Bread — 200 🪙',
         '**4** • <:GeleeRoyale:1390091559302729889> Gelee Royale — 300 🪙',
-        '**5** • <:magic_strawberry:1402026047825776763> Magic Strawberry — 1500 🪙',
+        '**5** • 🌸 Flower — 2500 🪙',
+        '**6** • <:magic_strawberry:1402026047825776763> Magic Strawberry — 1500 🪙',
         '',
         '`!buy [item number] [amount]`'
       ].join('\n'),
