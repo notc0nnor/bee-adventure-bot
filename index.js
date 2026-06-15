@@ -614,7 +614,7 @@ if (command === '!shop') {
     name: 'Non-Consumables 💘',
     value: collectibles.join('\n') || 'None available'
   }
-]
+],
       footer: {
         text: 'Apis Equinus'
       },
