@@ -55,26 +55,36 @@ const SHOP_ITEMS = {
     name: 'Nectar',
     emoji: '<:nectar:1389740460620382288>',
     cost: 130,
+    type: 'consumable',
     ep: 10,
   },
   2: {
     name: 'Honey',
     emoji: '<:Honey:1390088067947167885>',
     cost: 175,
+    type: 'consumable',
     ep: 15,
   },
   3: {
     name: 'Bee Bread',
     emoji: '<:BeeBread:1390098834192863232>',
     cost: 200,
+    type: 'consumable',
     ep: 20,
   },
   4: {
     name: 'Gelee Royale',
     emoji: '<:GeleeRoyale:1390091559302729889>',
     cost: 300,
+    type: 'consumable',
     ep: 35,
   },
+  5: {
+  name: 'Flower',
+  emoji: '🌸',
+  cost: 2500,
+  type: 'collectible',
+},
 };
 // ---!bee commands---
 
@@ -577,19 +587,37 @@ inventoryLogChannel.send({
   );
 }
   // -- !shop 
-  if (command === '!shop') {
+if (command === '!shop') {
+
+  const consumables = Object.entries(SHOP_ITEMS)
+    .filter(([_, item]) => item.type === 'consumable')
+    .map(([id, item]) =>
+      `**${id}** • ${item.emoji} ${item.name} — ${item.cost} 🪙`
+    );
+
+  const collectibles = Object.entries(SHOP_ITEMS)
+    .filter(([_, item]) => item.type === 'collectible')
+    .map(([id, item]) =>
+      `**${id}** • ${item.emoji} ${item.name} — ${item.cost} 🪙`
+    );
+
   return message.reply({
     embeds: [{
       color: 0xffe419,
       title: 'Item Shop 🐝',
-      description: [
-        '**1** • <:nectar:1389740460620382288> Nectar — 130 🪙',
-        '**2** • <:Honey:1390088067947167885> Honey — 175 🪙',
-        '**3** • <:BeeBread:1390098834192863232> Bee Bread — 200 🪙',
-        '**4** • <:GeleeRoyale:1390091559302729889> Gelee Royale — 300 🪙',
-        '',
-        '`!buy [item number] [amount]`'
-      ].join('\n'),
+      fields: [
+  {
+    name: 'Consumables 🍯',
+    value: consumables.join('\n')
+  },
+  {
+    name: 'Non-Consumables 💘',
+    value: collectibles.join('\n') || 'None available'
+  }
+]
+      footer: {
+        text: 'Apis Equinus'
+      },
       timestamp: new Date(),
     }],
   });
@@ -828,6 +856,11 @@ if (command === '!use') {
   }
 
   const itemData = SHOP_ITEMS[itemNumber];
+  if (itemData.type !== 'consumable') {
+  return message.reply(
+    `${itemData.emoji} ${itemData.name} cannot be used.`
+  );
+}
 
   let inventory = await Inventory.findOne({
     userId: message.author.id
