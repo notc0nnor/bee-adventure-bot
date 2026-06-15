@@ -444,9 +444,8 @@ await inventory.save();
       timestamp: new Date(),
     }],
   });
-}
-  const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
- const itemData = SHOP_ITEMS[itemNumber];
+    const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+
 inventoryLogChannel.send({
   embeds: [{
     color: 0xffe419,
@@ -462,6 +461,8 @@ inventoryLogChannel.send({
     timestamp: new Date(),
   }],
 });
+}
+  
   // -- !add items
   if (command === '!add' && args[1] === 'items') {
   if (message.author.id !== ADMIN_ID) {
