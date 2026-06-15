@@ -434,8 +434,29 @@ const previousCoins = inventory.coins;
     inventory.coins -= totalCost;
 await inventory.save();
     
+     const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+    
  if (itemData.type === 'flowers') {
+  const previousFlowers = inventory.flowers;
+
   inventory.flowers += amount;
+
+  await inventory.save();
+
+  const flowerEmbed = new EmbedBuilder()
+    .setColor(0xffade8)
+    .setTitle('Inventory Change')
+    .setDescription([
+      `**Added:** ${amount} 🌸`,
+      `**To:** <@${message.author.id}>`,
+      `**By:** Shop Purchase`,
+      ``,
+      `**Previous:** ${previousFlowers} → **Now:** ${inventory.flowers}`
+    ].join('\n'))
+    .setTimestamp();
+
+  await inventoryLogChannel.send({ embeds: [flowerEmbed] });
+
 } else {
   const existingItem = inventory.items.find(
     item => item.name === itemData.name
@@ -452,10 +473,10 @@ await inventory.save();
       quantity: amount,
     });
   }
-}
-    await inventory.save();
 
-      const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+  await inventory.save();
+}
+
     
 inventoryLogChannel.send({
   embeds: [{
@@ -472,6 +493,7 @@ inventoryLogChannel.send({
     timestamp: new Date(),
   }],
 });
+    
   return message.reply({
     embeds: [{
       color: 0xffe419,
