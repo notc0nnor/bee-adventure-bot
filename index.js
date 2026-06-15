@@ -411,9 +411,10 @@ if (command === '!add' && args[1] === 'coins') {
       `You need ${totalCost} 🪙 but only have ${inventory.coins} 🪙.`
     );
   }
-
+const previousCoins = inventory.coins;
   inventory.coins -= totalCost;
-
+await inventory.save();
+    
   const existingItem = inventory.items.find(
     item => item.name === itemData.name
   );
@@ -444,6 +445,23 @@ if (command === '!add' && args[1] === 'coins') {
     }],
   });
 }
+  const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
+
+inventoryLogChannel.send({
+  embeds: [{
+    color: 0xffe419,
+    title: 'Item Purchase',
+    description: [
+      `**Buyer:** <@${message.author.id}>`,
+      `**Item:** ${itemData.emoji} ${itemData.name}`,
+      `**Quantity:** ${amount}`,
+      `**Cost:** ${totalCost} 🪙`,
+      ``,
+      `**Coins:** ${previousCoins} → ${inventory.coins}`
+    ].join('\n'),
+    timestamp: new Date(),
+  }],
+});
   // -- !add items
   if (command === '!add' && args[1] === 'items') {
   if (message.author.id !== ADMIN_ID) {
