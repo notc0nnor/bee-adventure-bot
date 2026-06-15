@@ -79,12 +79,6 @@ const SHOP_ITEMS = {
     type: 'consumable',
     ep: 35,
   },
-  5: {
-  name: 'Flower',
-  emoji: '🌸',
-  cost: 2500,
-  type: 'collectible',
-},
 };
 // ---!bee commands---
 
@@ -587,41 +581,24 @@ inventoryLogChannel.send({
   );
 }
   // -- !shop 
-if (command === '!shop') {
-
-  const consumables = Object.entries(SHOP_ITEMS)
-    .filter(([_, item]) => item.type === 'consumable')
-    .map(([id, item]) =>
-      `**${id}** • ${item.emoji} ${item.name} — ${item.cost} 🪙`
-    );
-
-  const collectibles = Object.entries(SHOP_ITEMS)
-    .filter(([_, item]) => item.type === 'collectible')
-    .map(([id, item]) =>
-      `**${id}** • ${item.emoji} ${item.name} — ${item.cost} 🪙`
-    );
-
+  if (command === '!shop') {
   return message.reply({
     embeds: [{
       color: 0xffe419,
       title: 'Item Shop 🐝',
-      fields: [
-  {
-    name: 'Consumables 🍯',
-    value: consumables.join('\n')
-  },
-  {
-    name: 'Non-Consumables 💘',
-    value: collectibles.join('\n') || 'None available'
-  }
-],
-      footer: {
-        text: 'Apis Equinus'
-      },
+      description: [
+        '**1** • <:nectar:1389740460620382288> Nectar — 130 🪙',
+        '**2** • <:Honey:1390088067947167885> Honey — 175 🪙',
+        '**3** • <:BeeBread:1390098834192863232> Bee Bread — 200 🪙',
+        '**4** • <:GeleeRoyale:1390091559302729889> Gelee Royale — 300 🪙',
+        '',
+        '`!buy [item number] [amount]`'
+      ].join('\n'),
       timestamp: new Date(),
     }],
   });
 }
+
 // --!remove coins---
 if (command === '!remove' && args[1] === 'coins') {
   if (message.author.id !== ADMIN_ID) {
