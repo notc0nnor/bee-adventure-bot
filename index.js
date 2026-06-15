@@ -446,7 +446,7 @@ await inventory.save();
   });
 }
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
-
+ const itemData = SHOP_ITEMS[itemNumber];
 inventoryLogChannel.send({
   embeds: [{
     color: 0xffe419,
