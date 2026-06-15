@@ -588,40 +588,27 @@ inventoryLogChannel.send({
   );
 }
   // -- !shop 
+  Can you help me improve the shop display? i dont want to break any code. This is the current code:
+
   if (command === '!shop') {
-
-  const consumables = Object.entries(SHOP_ITEMS)
-    .filter(([_, item]) => item.type === 'consumable')
-    .map(([id, item]) =>
-      `**${id}** • ${item.emoji} ${item.name} — ${item.cost} 🪙`
-    );
-
-  const collectibles = Object.entries(SHOP_ITEMS)
-    .filter(([_, item]) => item.type === 'collectible')
-    .map(([id, item]) =>
-      `**${id}** • ${item.emoji} ${item.name} — ${item.cost} 🪙`
-    );
-
   return message.reply({
     embeds: [{
       color: 0xffe419,
       title: 'Item Shop 🐝',
-      embeds: [{
-  title: 'Item Shop 🐝',
-  fields: [
-    {
-      name: 'Consumables 🍯',
-      value: consumables.join('\n')
-    },
-    {
-      name: 'Other Items 🦋',
-      value: collectibles.join('\n')
-    }
-  ]
-}],
-  }],
+      description: [
+        '**1** • <:nectar:1389740460620382288> Nectar — 130 🪙',
+        '**2** • <:Honey:1390088067947167885> Honey — 175 🪙',
+        '**3** • <:BeeBread:1390098834192863232> Bee Bread — 200 🪙',
+        '**4** • <:GeleeRoyale:1390091559302729889> Gelee Royale — 300 🪙',
+        '**5** • <:magic_strawberry:1402026047825776763> Magic Strawberry — 1500 🪙',
+        '',
+        '`!buy [item number] [amount]`'
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
   });
 }
+
 
 // --!remove coins---
 if (command === '!remove' && args[1] === 'coins') {
