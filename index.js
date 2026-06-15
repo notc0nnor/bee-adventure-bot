@@ -50,6 +50,32 @@ const {
 
 const Bee = require('./models/Bee');
 
+const SHOP_ITEMS = {
+  1: {
+    name: 'Nectar',
+    emoji: '<:nectar:1389740460620382288>',
+    cost: 130,
+    ep: 10,
+  },
+  2: {
+    name: 'Honey',
+    emoji: '<:Honey:1390088067947167885',
+    cost: 175,
+    ep: 15,
+  },
+  3: {
+    name: 'Bee Bread',
+    emoji: ':BeeBread:1390098834192863232',
+    cost: 200,
+    ep: 20,
+  },
+  4: {
+    name: 'Gelee Royale',
+    emoji: '<:GeleeRoyale:1390091559302729889>',
+    cost: 300,
+    ep: 35,
+  },
+};
 // ---!bee commands---
 
 client.on('messageCreate', async (message) => {
@@ -236,6 +262,42 @@ return message.reply({
 });
 
 }
+//-------- !items
+if (command === '!items') {
+  let inventory = await Inventory.findOne({
+    userId: message.author.id
+  });
+
+  if (!inventory) {
+    inventory = new Inventory({
+      userId: message.author.id
+    });
+
+    await inventory.save();
+  }
+
+  const itemList =
+    inventory.items.length > 0
+      ? inventory.items
+          .map(
+            item =>
+              `${item.emoji} ${item.name} × ${item.quantity}`
+          )
+          .join('\n')
+      : 'No items';
+
+  return message.reply({
+    embeds: [{
+      color: 0xffe419,
+      title: `${message.author.username}'s Items 🐝`,
+      description: itemList,
+      footer: {
+        text: 'Apis Equinus'
+      },
+      timestamp: new Date(),
+    }],
+  });
+}
 //---!add coins---
 if (command === '!add' && args[1] === 'coins') {
   if (message.author.id !== ADMIN_ID) {
@@ -309,6 +371,204 @@ if (command === '!add' && args[1] === 'coins') {
         `**To:** <@${user.id}>`,
         ``,
         `**Flowers:** ${previousFlowers} → ${inventory.flowers}`
+      ].join('\n'),
+      timestamp: new Date(),
+    }],
+  });
+}
+
+  // -- !buy --
+  if (command === '!buy') {
+  const itemNumber = parseInt(args[1], 10);
+  const amount = parseInt(args[2], 10) || 1;
+
+  if (!SHOP_ITEMS[itemNumber]) {
+    return message.reply(
+      'Usage: `!buy [1-4] [amount]`\n' +
+      '1 = Nectar\n' +
+      '2 = Honey\n' +
+      '3 = Bee Bread\n' +
+      '4 = Gelee Royale'
+    );
+  }
+
+  const itemData = SHOP_ITEMS[itemNumber];
+
+  let inventory = await Inventory.findOne({
+    userId: message.author.id
+  });
+
+  if (!inventory) {
+    inventory = new Inventory({
+      userId: message.author.id
+    });
+  }
+
+  const totalCost = itemData.cost * amount;
+
+  if (inventory.coins < totalCost) {
+    return message.reply(
+      `You need ${totalCost} 🪙 but only have ${inventory.coins} 🪙.`
+    );
+  }
+
+  inventory.coins -= totalCost;
+
+  const existingItem = inventory.items.find(
+    item => item.name === itemData.name
+  );
+
+  if (existingItem) {
+    existingItem.quantity += amount;
+  } else {
+    inventory.items.push({
+      name: itemData.name,
+      emoji: itemData.emoji,
+      cost: itemData.cost,
+      ep: itemData.ep,
+      quantity: amount,
+    });
+  }
+
+  await inventory.save();
+
+  return message.reply({
+    embeds: [{
+      color: 0xffe419,
+      title: 'Purchase Successful 🐝',
+      description:
+        `${itemData.emoji} Bought **${amount} ${itemData.name}**\n` +
+        `Cost: **${totalCost} 🪙**\n` +
+        `Remaining Coins: **${inventory.coins} 🪙**`,
+      timestamp: new Date(),
+    }],
+  });
+}
+  // -- !add items
+  if (command === '!add' && args[1] === 'items') {
+  if (message.author.id !== ADMIN_ID) {
+    return message.reply('You do not have permission to use this command.');
+  }
+
+  const itemNumber = parseInt(args[2], 10);
+  const amount = parseInt(args[3], 10);
+  const user = message.mentions.users.first();
+
+  if (
+    isNaN(itemNumber) ||
+    isNaN(amount) ||
+    amount <= 0 ||
+    !user ||
+    !SHOP_ITEMS[itemNumber]
+  ) {
+    return message.reply(
+      'Usage: `!add items [1-4] [amount] @user`'
+    );
+  }
+
+  const itemData = SHOP_ITEMS[itemNumber];
+
+  let inventory = await Inventory.findOne({ userId: user.id });
+
+  if (!inventory) {
+    inventory = new Inventory({ userId: user.id });
+  }
+
+  const existingItem = inventory.items.find(
+    item => item.name === itemData.name
+  );
+
+  if (existingItem) {
+    existingItem.quantity += amount;
+  } else {
+    inventory.items.push({
+      name: itemData.name,
+      emoji: itemData.emoji,
+      cost: itemData.cost,
+      ep: itemData.ep,
+      quantity: amount,
+    });
+  }
+
+  await inventory.save();
+
+  return message.reply(
+    `Added ${amount} ${itemData.emoji} **${itemData.name}** to ${user.username}.`
+  );
+}
+  // --!remove items
+  if (command === '!remove' && args[1] === 'items') {
+  if (message.author.id !== ADMIN_ID) {
+    return message.reply('You do not have permission to use this command.');
+  }
+
+  const itemNumber = parseInt(args[2], 10);
+  const amount = parseInt(args[3], 10);
+  const user = message.mentions.users.first();
+
+  if (
+    isNaN(itemNumber) ||
+    isNaN(amount) ||
+    amount <= 0 ||
+    !user ||
+    !SHOP_ITEMS[itemNumber]
+  ) {
+    return message.reply(
+      'Usage: `!remove items [1-4] [amount] @user`'
+    );
+  }
+
+  const itemData = SHOP_ITEMS[itemNumber];
+
+  let inventory = await Inventory.findOne({ userId: user.id });
+
+  if (!inventory) {
+    return message.reply(`${user.username} has no inventory.`);
+  }
+
+  const existingItem = inventory.items.find(
+    item => item.name === itemData.name
+  );
+
+  if (!existingItem) {
+    return message.reply(
+      `${user.username} does not own any ${itemData.name}.`
+    );
+  }
+
+  if (existingItem.quantity < amount) {
+    return message.reply(
+      `${user.username} only has ${existingItem.quantity} ${itemData.name}.`
+    );
+  }
+
+  existingItem.quantity -= amount;
+
+  if (existingItem.quantity <= 0) {
+    inventory.items = inventory.items.filter(
+      item => item.name !== itemData.name
+    );
+  }
+
+  await inventory.save();
+
+  return message.reply(
+    `Removed ${amount} ${itemData.emoji} **${itemData.name}** from ${user.username}.`
+  );
+}
+  // -- !shop 
+  if (command === '!shop') {
+  return message.reply({
+    embeds: [{
+      color: 0xffe419,
+      title: 'Item Shop 🐝',
+      description: [
+        '**1** • <:nectar:1389740460620382288> Nectar — 130 🪙',
+        '**2** • <:Honey:1390088067947167885> Honey — 175 🪙',
+        '**3** • <:BeeBread:1390098834192863232> Bee Bread — 200 🪙',
+        '**4** • <:GeleeRoyale:1390091559302729889> Gelee Royale — 300 🪙',
+        '',
+        '`!buy [item number] [amount]`'
       ].join('\n'),
       timestamp: new Date(),
     }],
