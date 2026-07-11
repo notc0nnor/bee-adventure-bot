@@ -149,6 +149,13 @@ const SHOP_ITEMS = {
     type: 'collectible',
     ep: 0,
   },
+ 100: {
+    name: 'Pride Custom Token',
+    emoji: '<:pride_custom:1525490748726837378>',
+    cost: 1000000,
+    type: 'collectible',
+    ep: 0,
+  },
 };
 // ---!bee commands---
 
