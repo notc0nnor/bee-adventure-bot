@@ -383,7 +383,7 @@ return message.reply({
     title: `${message.author.username}'s Inventory 🐝`,
     fields: [
       { name: 'Coins', value: `${inventory.coins} 🪙`, inline: true },
-      { name: 'Flowers', value: `${inventory.flowers} 🌸`, inline: true },
+      { name: 'Flowers', value: `${inventory.flowers} <:flower:1556614241375621171>`, inline: true },
       { name: 'Items', value: itemList, inline: false },
     ],
     footer: { text: 'Apis Equinus' },
@@ -489,7 +489,7 @@ if (command === '!add' && args[1] === 'coins') {
   inventory.flowers += amount;
   await inventory.save();
 
-  message.reply(`Added ${amount} 🌸 to ${user.username}'s inventory.`);
+  message.reply(`Added ${amount} <:flower:1556614241375621171> to ${user.username}'s inventory.`);
 
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
   inventoryLogChannel.send({
@@ -497,7 +497,7 @@ if (command === '!add' && args[1] === 'coins') {
       color: 0x5050fa,
       title: 'Inventory Change',
       description: [
-        `**Added:** ${amount} 🌸`,
+        `**Added:** ${amount} <:flower:1556614241375621171>`,
         `**To:** <@${user.id}>`,
         ``,
         `**Flowers:** ${previousFlowers} → ${inventory.flowers}`
@@ -917,7 +917,7 @@ if (command === '!give' && args[1] === 'flowers') {
   await recipientInv.save();
 
   // Confirm in chat
-  await message.reply(`You gave **${amount}** 🌸 to ${target.username}.`);
+  await message.reply(`You gave **${amount}** <:flower:1556614241375621171> to ${target.username}.`);
 
   // Log transaction
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
@@ -926,7 +926,7 @@ if (command === '!give' && args[1] === 'flowers') {
       color: 0xca61ff,
       title: 'Inventory Change - Transfer',
       description: [
-        `**Transfer:** ${amount} 🌸`,
+        `**Transfer:** ${amount} <:flower:1556614241375621171>`,
         `**From:** <@${senderId}>`,
         `**To:** <@${recipientId}>`,
         ``,
@@ -966,7 +966,7 @@ if (command === '!give' && args[1] === 'flowers') {
   inventory.flowers -= amount;
   await inventory.save();
 
-  message.reply(`Removed ${amount} 🌸 from ${user.username}'s inventory.`);
+  message.reply(`Removed ${amount} <:flower:1556614241375621171> from ${user.username}'s inventory.`);
 
   const inventoryLogChannel = await client.channels.fetch('1394414785130532976');
   inventoryLogChannel.send({
@@ -974,7 +974,7 @@ if (command === '!give' && args[1] === 'flowers') {
       color: 0xe88102,
       title: 'Inventory Change',
       description: [
-        `**Removed:** ${amount} 🌸`,
+        `**Removed:** ${amount} <:flower:1556614241375621171>`,
         `**From:** <@${user.id}>`,
         ``,
         `**Flowers:** ${previousFlowers} → ${inventory.flowers}`
@@ -1176,7 +1176,7 @@ if (command === '!work') {
     `${randomMessage}`,
     ``,
     `You earned **${reward} 🪙**`,
-    foundFlower ? `Luck was on your side! You found 1 🌸` : null
+    foundFlower ? `Luck was on your side! You found 1 <:flower:1556614241375621171>` : null
   ].filter(Boolean).join('\n');
 
   const workEmbed = new EmbedBuilder()
@@ -1207,7 +1207,7 @@ if (foundFlower) {
       .setColor(0xffade8)
       .setTitle('Inventory Change')
       .setDescription([
-        `**Added:** 1 🌸`,
+        `**Added:** 1 <:flower:1556614241375621171>`,
         `**To:** <@${userId}>`,
         `**By:** Working`,
         ``,
