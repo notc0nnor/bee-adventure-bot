@@ -136,27 +136,34 @@ const SHOP_ITEMS = {
     ep: 0,
   },
   13: {
+    name: 'Second Chance',
+    emoji: '<:secondchance:1556613707797241957>',
+    cost: 1000,
+    type: 'collectible',
+    ep: 0,
+  },
+  14: {
     name: 'Common Custom Token',
     emoji: '<:CommonCustom:1556613866614558720>',
     cost: 10000,
     type: 'collectible',
     ep: 0,
   },
-  14: {
+  15: {
     name: 'Uncommon Custom Token',
     emoji: '<:UncommonCustom:1556613846905520168>',
     cost: 13000,
     type: 'collectible',
     ep: 0,
   },
-  15: {
+  16: {
     name: 'Rare Custom Token',
     emoji: '<:RareCustom:1556613823513890866>',
     cost: 15000,
     type: 'collectible',
     ep: 0,
   },
-  16: {
+  17: {
     name: 'Witches Brew',
     emoji: '<:witchesbrew:1556613886659133450>',
     cost: 2000,
@@ -746,11 +753,12 @@ inventoryLogChannel.send({
         '**10** • <:magic_rainbow_lotus:1556614066636591114> Rainbow Lotus — 1500 🪙',
         '**11** • <:starfruit:1556614121800073216> Starfruit — 1500 🪙',
         '**12** • <:heartfruit:1556614145884028948> Heartfruit – 1500🪙',
+        '**13** • <:secondchance:1556613707797241957> Second Chance – 1000🪙',
         '**Customs**',
-        '**13** • <:CommonCustom:1556613866614558720> Common Custom – 10000🪙',
-        '**14** • <:UncommonCustom:1556613846905520168> Uncommon Custom – 13000🪙',
-        '**15** • <:RareCustom:1556613823513890866> Rare Custom – 15000🪙',
-        '**16** • <:witchesbrew:1556613886659133450> Witches Brew – 2000🪙',
+        '**14** • <:CommonCustom:1556613866614558720> Common Custom – 10000🪙',
+        '**15** • <:UncommonCustom:1556613846905520168> Uncommon Custom – 13000🪙',
+        '**16** • <:RareCustom:1556613823513890866> Rare Custom – 15000🪙',
+        '**17** • <:witchesbrew:1556613886659133450> Witches Brew – 2000🪙',
         '',
         '`!buy [item number] [amount]`'
       ].join('\n'),
